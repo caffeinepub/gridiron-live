@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 19,
+  "projectStateVersion": 21,
   "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
   "architectural_notes": [
     "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
@@ -310,6 +310,38 @@
         "REQ-40"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-placeholder-viewer-live-stream-implementation-so-that-viewers-can-actually-connect-to-and-play-the-broadcaster-s-live-stream-when-a-session-is-in-the-live-lifecycle-state-no-forced-stream-unavailable-simulation",
+      "title": "Replace the current placeholder viewer live-stream implementation so that viewers can actually connect to and play the broadcaster’s live stream when a session is in the \"live\" lifecycle state (no forced \"Stream Unavailable\" simulation).",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-broadcaster-to-viewer-streaming-pipeline-is-fully-implemented-end-to-end-including-session-scoped-signaling-state-in-the-motoko-backend-if-required-so-that-a-viewer-joining-with-a-valid-session-code-can-establish-a-working-in-browser-real-time-connection-to-the-broadcaster-video-audio",
+      "title": "Ensure the broadcaster-to-viewer streaming pipeline is fully implemented end-to-end, including session-scoped signaling/state in the Motoko backend if required, so that a viewer joining with a valid session code can establish a working in-browser real-time connection to the broadcaster (video + audio).",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-the-outgoing-stream-includes-an-enabled-audio-track-and-viewers-can-reliably-hear-the-broadcaster-during-a-live-session",
+      "title": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, the outgoing stream includes an enabled audio track and viewers can reliably hear the broadcaster during a live session.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-move-the-subtitles-captions-overlay-to-the-top-of-the-video-inside-the-video-container-for-both-the-broadcaster-camera-preview-and-the-viewer-watch-view-while-keeping-existing-styling-readable-over-video",
+      "title": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -469,6 +501,12 @@
       "reqIds": [
         "REQ-39"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Move subtitles/captions overlay to the top of the video (inside video) for both broadcaster preview and viewer watch views",
+      "reqIds": [],
       "status": "pending"
     }
   ],

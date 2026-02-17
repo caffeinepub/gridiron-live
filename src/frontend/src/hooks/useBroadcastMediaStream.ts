@@ -32,6 +32,7 @@ export function useBroadcastMediaStream(
 
     // Add audio track if available and enabled
     if (audioTrack && micEnabled) {
+      audioTrack.enabled = true;
       newBroadcastStream.addTrack(audioTrack);
       audioTrackRef.current = audioTrack;
     }
@@ -47,29 +48,51 @@ export function useBroadcastMediaStream(
 
   // Handle mic enable/disable by toggling track.enabled
   useEffect(() => {
-    if (!broadcastStream || !audioTrackRef.current) return;
+    if (!broadcastStream) return;
 
     const audioTracks = broadcastStream.getAudioTracks();
-    audioTracks.forEach(track => {
-      track.enabled = micEnabled;
-    });
-  }, [micEnabled, broadcastStream]);
+    
+    if (micEnabled && audioTrack) {
+      // Ensure audio track is present
+      const hasAudioTrack = audioTracks.some(track => track.id === audioTrack.id);
+      if (!hasAudioTrack) {
+        broadcastStream.addTrack(audioTrack);
+      }
+      // Enable all audio tracks
+      audioTracks.forEach(track => {
+        track.enabled = true;
+      });
+      audioTrackRef.current = audioTrack;
+    } else {
+      // Disable all audio tracks when mic is off
+      audioTracks.forEach(track => {
+        track.enabled = false;
+      });
+    }
+  }, [micEnabled, broadcastStream, audioTrack]);
 
   const setMicEnabled = (enabled: boolean) => {
     if (!broadcastStream) return;
 
     const audioTracks = broadcastStream.getAudioTracks();
     
-    if (enabled && audioTrack && audioTracks.length === 0) {
+    if (enabled && audioTrack) {
       // Add audio track if not present
-      broadcastStream.addTrack(audioTrack);
-      audioTrackRef.current = audioTrack;
+      const hasAudioTrack = audioTracks.some(track => track.id === audioTrack.id);
+      if (!hasAudioTrack) {
+        broadcastStream.addTrack(audioTrack);
+        audioTrackRef.current = audioTrack;
+      }
+      // Enable all audio tracks
+      audioTracks.forEach(track => {
+        track.enabled = true;
+      });
+    } else {
+      // Disable all audio tracks
+      audioTracks.forEach(track => {
+        track.enabled = false;
+      });
     }
-    
-    // Toggle enabled state
-    audioTracks.forEach(track => {
-      track.enabled = enabled;
-    });
   };
 
   return {

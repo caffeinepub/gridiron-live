@@ -17,7 +17,7 @@ export default function ViewerSubtitlesOverlay({
 
   if (captionsUnavailable) {
     return (
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-yellow-500/50">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-yellow-500/50 z-20">
         <div className="flex items-center gap-2 text-yellow-400 text-sm">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           <span>Broadcaster captions are unavailable</span>
@@ -31,7 +31,7 @@ export default function ViewerSubtitlesOverlay({
   }
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg z-20">
       <p className="text-white text-center text-sm md:text-base leading-relaxed">
         {caption}
       </p>

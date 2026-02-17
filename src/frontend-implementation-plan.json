@@ -1,114 +1,105 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "VillanSpoon Live: fix viewer playback, broadcaster audio delivery, and broadcaster-sourced subtitles",
+  "title": "VillanSpoon Live: real viewer playback (WebRTC) + captions moved to top",
   "requirements": [
     {
-      "id": "REQ-36",
-      "summary": "Render and play the broadcaster live video stream on Viewer Watch (avoid black screen) with an in-player error state while preserving overlays.",
+      "id": "REQ-41",
+      "summary": "Remove simulated viewer failure and implement real viewer live-stream connection + retry without page reload.",
       "acceptanceCriteria": [
-        "When a session is live, the Viewer Watch page renders a real video element (not just status text) and attempts to play the incoming stream.",
-        "If the incoming stream is not available/negotiation fails, show a clear in-player error state (English) instead of a silent black screen.",
-        "Overlays (latest event, flag overlay, scoreboard, subtitles) remain rendered within the video container and do not break video playback."
+        "When the broadcaster is live, the Viewer Watch page renders the broadcaster’s actual camera video instead of always showing the \"Stream Unavailable\" overlay.",
+        "The viewer connection logic no longer unconditionally sets an error after a timeout (remove the simulated failure path in the live connection flow).",
+        "Retry Connection triggers a real reconnection attempt and can recover from a transient disconnect without reloading the page."
       ],
       "file_operations": [
+        {
+          "path": "frontend/src/hooks/useViewerLiveStream.ts",
+          "operation": "modify",
+          "description": "Replace the current simulated timeout/error logic with real in-browser connection management (WebRTC peer connection lifecycle, attach remote MediaStream to the provided videoRef, track connecting/connected/error states, and implement a true retry() that tears down and re-establishes negotiation)."
+        },
         {
           "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
           "operation": "modify",
-          "description": "Replace the live-state status-only UI with a real <video> element inside the existing aspect-ratio container; accept stream/playback state + error props and render an English in-player error overlay when playback/negotiation fails while continuing to render children overlays above the video."
-        },
-        {
-          "path": "frontend/src/pages/ViewerWatchPage.tsx",
-          "operation": "modify",
-          "description": "Wire the Viewer Watch page to request/attach the incoming broadcast stream when lifecycle is live; pass video ref/stream status into ViewerVideoPlayer; ensure overlays (LatestEventOverlay, FlagAnnouncementOverlay, OnCameraScoreboardOverlay, ViewerSubtitlesOverlay) remain within the same relative video container."
-        },
-        {
-          "path": "frontend/src/hooks/useViewerLiveStream.ts",
-          "operation": "create",
-          "description": "Create a hook that manages viewer-side live stream attachment: owns the HTMLVideoElement ref, attempts to start playback when live, tracks connection/negotiation failures, and exposes a stable error message (English) for the in-player error state."
+          "description": "Adjust the live-state UI to reflect real connection state (connecting vs connected vs error) driven by the updated useViewerLiveStream hook; keep the existing Retry Connection button wired to the hook retry() for an actual reconnection attempt."
         }
       ]
     },
     {
-      "id": "REQ-37",
-      "summary": "Ensure broadcaster microphone audio is included (and toggleable) in the outgoing broadcast stream so viewers reliably hear it without restarting sessions.",
+      "id": "REQ-42",
+      "summary": "Implement the frontend portion of an end-to-end broadcaster-to-viewer WebRTC pipeline using backend-assisted, session-code-scoped signaling/state.",
       "acceptanceCriteria": [
-        "During a live session with mic ON, the outgoing stream used for broadcasting includes an enabled audio track derived from the broadcaster microphone capture.",
-        "A newly joined viewer can hear audio without needing the broadcaster to restart the session.",
-        "Toggling the broadcaster mic OFF stops sending microphone audio to viewers; toggling back ON restores viewer audio without restarting the entire broadcast."
+        "A viewer joining a live session by session code can establish a successful connection and see live video within the Viewer Watch video element.",
+        "A viewer joining after the broadcaster is already live can still connect and see the current live video (late join works).",
+        "The backend exposes whatever session-code-scoped signaling/state endpoints are needed for the chosen in-browser real-time protocol, and the frontend uses them to complete negotiation.",
+        "No third-party streaming providers are introduced."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/hooks/useViewerLiveStream.ts",
+          "operation": "modify",
+          "description": "Implement viewer-side WebRTC negotiation using sessionCode-scoped backend-assisted signaling/state (poll/subscribe for offers/answers/ICE as provided by backend capabilities), including robust cleanup on unmount/session change and late-join support."
+        },
+        {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Refactor outgoing media composition so the broadcast stream maintains stable track objects for the full live session: add mic audio track once, then toggle delivery by setting track.enabled (or replacing the track) instead of stopping/removing tracks in a way that breaks existing/new viewer playback; keep mic toggling fully functional without restarting broadcast."
+          "description": "Integrate broadcaster-side WebRTC publishing lifecycle during the live state (create/maintain a peer connection per viewer or via a session-scoped fanout strategy supported by backend signaling/state; ensure camera preview remains intact). Use the selected \"camera\" component hook already in this file for camera capture; verify the component's usage instructions before implementing."
         },
         {
           "path": "frontend/src/hooks/useBroadcastMediaStream.ts",
-          "operation": "create",
-          "description": "Create a hook that composes a stable outgoing MediaStream from the camera preview stream (from the selected camera component) plus the microphone track, and exposes helpers to enable/disable mic audio delivery without tearing down the stream; verify the component's usage instructions before implementing."
+          "operation": "modify",
+          "description": "Harden the combined broadcast MediaStream composition so it can be reliably used as the outgoing stream for WebRTC publishing (stable track handling, predictable audio track enable/disable behavior, and avoiding unnecessary track churn during mic toggles)."
         },
         {
-          "path": "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
           "operation": "modify",
-          "description": "Ensure mic toggle UI reflects the effective state of audio delivery (enabled/disabled on the outgoing stream) and shows clear English error/disabled states when microphone capture is unavailable during a live broadcast."
+          "description": "Ensure Viewer Watch only attempts to connect when lifecycleState is \"live\" and sessionCode is valid; keep the existing routing and page structure, but wire any required viewer-gesture prompts (if needed for autoplay/audio) within the existing page layout."
         }
       ]
     },
     {
-      "id": "REQ-38",
-      "summary": "Move subtitle generation to the broadcaster and deliver captions to viewers without requesting viewer microphone; show clear unavailability messaging when SpeechRecognition is unsupported/errors.",
+      "id": "REQ-43",
+      "summary": "Ensure broadcaster mic toggling correctly controls outgoing audio track and viewer playback is configured for audible, mobile-compatible audio.",
       "acceptanceCriteria": [
-        "Enabling subtitles on the Viewer Watch page does not request or use the viewer’s microphone.",
-        "When subtitles are enabled on the viewer side and the broadcaster is speaking, viewers see captions that track the broadcaster’s speech.",
-        "If the broadcaster’s browser does not support SpeechRecognition (or it errors), show a clear English message to the broadcaster and viewers that broadcaster subtitles are unavailable (while video/audio can continue)."
+        "With mic enabled on the broadcaster page, viewers hear the broadcaster audio during a live session.",
+        "Toggling the broadcaster mic OFF stops audio for viewers; toggling it back ON restores audio without requiring a page refresh.",
+        "The viewer video element is configured to play audio (not muted) and remains compatible with mobile autoplay constraints (e.g., playsInline)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Add broadcaster-side caption capture using the existing useSpeechRecognition hook; when live, start/stop caption publishing based on a broadcaster captions toggle; if SpeechRecognition is unsupported or errors, show a clear English message in the broadcaster UI and publish an explicit 'captions unavailable' status for the session so viewers can display the same message."
+          "description": "Update mic toggle behavior to control the outgoing audio track used for streaming (ensure the published stream’s audio track is present when micEnabled is ON and disabled/removed when OFF, with seamless restore on re-enable), while keeping local preview behavior consistent."
         },
         {
-          "path": "frontend/src/hooks/useSpeechRecognition.ts",
+          "path": "frontend/src/hooks/useBroadcastMediaStream.ts",
           "operation": "modify",
-          "description": "Expose a stable error/status surface (e.g., lastError, isSupported, isListening) suitable for broadcaster UI messaging and for triggering 'captions unavailable' publishing while keeping all user-facing text in English."
+          "description": "Ensure micEnabled toggles are applied to the actual audio track used for the outgoing stream (track.enabled semantics) and that adding/removing tracks is done in a way that supports renegotiation requirements of the chosen WebRTC flow."
         },
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
           "operation": "modify",
-          "description": "Add React Query mutations/queries for caption publishing and retrieval using the existing backend actor typing: a mutation to publish caption updates for a session code and a query to fetch the latest caption for a session code (for use by viewer polling)."
-        },
-        {
-          "path": "frontend/src/pages/ViewerWatchPage.tsx",
-          "operation": "modify",
-          "description": "Remove viewer-side SpeechRecognition usage entirely so enabling subtitles never requests the viewer microphone; instead, use polling of the latest broadcaster-published caption when the viewer subtitle toggle is enabled, and stop polling immediately when disabled."
+          "description": "Confirm the viewer video element remains unmuted and playsInline, and add a minimal in-UI fallback for mobile autoplay restrictions (e.g., a user-gesture 'Tap to unmute/play' control) that triggers video.play() when required without reloading."
         }
       ]
     },
     {
-      "id": "REQ-40",
-      "summary": "Update Viewer Watch subtitles to poll broadcaster-published captions via React Query and render using the existing in-video caption overlay styling.",
+      "id": "REQ-44",
+      "summary": "Move subtitles/captions overlay to the top of the video container on broadcaster preview and viewer watch, without covering the bottom scoreboard.",
       "acceptanceCriteria": [
-        "Viewer subtitle toggle controls whether broadcaster captions are fetched/displayed; disabling subtitles stops polling for captions.",
-        "ViewerSubtitlesOverlay continues to show “Subtitles are not supported in this browser” only when subtitles truly cannot be displayed; it must not imply the viewer needs speech recognition to see broadcaster captions.",
-        "Captions render inside the video container at the same overlay position as today and update as new caption text arrives."
+        "On the Viewer Watch page, enabled subtitles render near the top of the video container (not the bottom).",
+        "On the Broadcaster page camera preview, the live transcript/caption overlay renders near the top of the video container (not the bottom).",
+        "Caption overlays do not overlap the on-camera bottom scoreboard overlay (scoreboard remains unobstructed)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
           "operation": "modify",
-          "description": "Change the overlay to accept broadcaster caption text + a 'captions unavailable' state (from broadcaster) and render them using the existing overlay styling/position; only show “Subtitles are not supported in this browser” when captions truly cannot be displayed (not because viewer SpeechRecognition is absent)."
+          "description": "Reposition the viewer caption overlay from bottom placement to top placement within the video container; keep current readability styling (background blur, contrast) and ensure it does not interfere with the bottom scoreboard overlay."
         },
         {
-          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Implement subtitle polling wiring: when subtitlesEnabled is true, use a React Query polling hook to fetch the latest caption for the session code; pass caption text/unavailable status into ViewerSubtitlesOverlay; ensure disabling subtitles stops polling and clears displayed caption."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Add a dedicated React Query hook for polling the latest caption (with configurable refetchInterval and enabled flag tied to the viewer subtitles toggle) and ensure it returns timestamp/text for incremental updates and proper UI refresh."
+          "description": "Move the broadcaster transcript overlay from bottom placement to top placement inside the camera preview container; preserve readability and ensure the bottom OnCameraScoreboardOverlay remains unobstructed. Use the selected \"camera\" component hook already in this file for camera preview; verify the component's usage instructions before implementing."
         }
       ]
     }

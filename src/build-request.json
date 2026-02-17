@@ -1,118 +1,114 @@
 {
   "kind": "build_request",
-  "title": "Fix viewer black screen, broadcaster audio delivery, and broadcaster-sourced subtitles",
+  "title": "Fix live stream playback (viewer video/audio) and move subtitles to top of video",
   "projectName": "VillanSpoon Live",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-36",
-      "text": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
+      "id": "REQ-41",
+      "text": "Replace the current placeholder viewer live-stream implementation so that viewers can actually connect to and play the broadcaster’s live stream when a session is in the \"live\" lifecycle state (no forced \"Stream Unavailable\" simulation).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6"
+          "msg-1",
+          "msg-3"
         ],
         "quotes": [
-          "1 black screen"
+          "it still doesnt work",
+          "1 all of it"
         ]
       },
       "acceptanceCriteria": [
-        "When a session is live, the Viewer Watch page renders a real video element (not just status text) and attempts to play the incoming stream.",
-        "If the incoming stream is not available/negotiation fails, show a clear in-player error state (English) instead of a silent black screen.",
-        "Overlays (latest event, flag overlay, scoreboard, subtitles) remain rendered within the video container and do not break video playback."
+        "When the broadcaster is live, the Viewer Watch page renders the broadcaster’s actual camera video instead of always showing the \"Stream Unavailable\" overlay.",
+        "The viewer connection logic no longer unconditionally sets an error after a timeout (remove the simulated failure path in the live connection flow).",
+        "Retry Connection triggers a real reconnection attempt and can recover from a transient disconnect without reloading the page."
       ]
     },
     {
-      "id": "REQ-37",
-      "text": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-6"
-        ],
-        "quotes": [
-          "3 yes and i have it on just viewers cant hear"
-        ]
-      },
-      "acceptanceCriteria": [
-        "During a live session with mic ON, the outgoing stream used for broadcasting includes an enabled audio track derived from the broadcaster microphone capture.",
-        "A newly joined viewer can hear audio without needing the broadcaster to restart the session.",
-        "Toggling the broadcaster mic OFF stops sending microphone audio to viewers; toggling back ON restores viewer audio without restarting the entire broadcast."
-      ]
-    },
-    {
-      "id": "REQ-38",
-      "text": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
+      "id": "REQ-42",
+      "text": "Ensure the broadcaster-to-viewer streaming pipeline is fully implemented end-to-end, including session-scoped signaling/state in the Motoko backend if required, so that a viewer joining with a valid session code can establish a working in-browser real-time connection to the broadcaster (video + audio).",
       "target": "both",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-1",
+          "msg-3"
         ],
         "quotes": [
-          "the subtitles only work for them and not whats coming from my mic",
-          "2 brodcaster"
+          "it still doesnt work",
+          "1 all of it"
         ]
       },
       "acceptanceCriteria": [
-        "Enabling subtitles on the Viewer Watch page does not request or use the viewer’s microphone.",
-        "When subtitles are enabled on the viewer side and the broadcaster is speaking, viewers see captions that track the broadcaster’s speech.",
-        "If the broadcaster’s browser does not support SpeechRecognition (or it errors), show a clear English message to the broadcaster and viewers that broadcaster subtitles are unavailable (while video/audio can continue)."
+        "A viewer joining a live session by session code can establish a successful connection and see live video within the Viewer Watch video element.",
+        "A viewer joining after the broadcaster is already live can still connect and see the current live video (late join works).",
+        "The backend exposes whatever session-code-scoped signaling/state endpoints are needed for the chosen in-browser real-time protocol, and the frontend uses them to complete negotiation.",
+        "No third-party streaming providers are introduced."
       ]
     },
     {
-      "id": "REQ-39",
-      "text": "Add backend support for broadcaster-sourced caption delivery so viewers can fetch the latest caption text for a given session code (no third-party services).",
-      "target": "backend",
+      "id": "REQ-43",
+      "text": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, the outgoing stream includes an enabled audio track and viewers can reliably hear the broadcaster during a live session.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-1",
+          "msg-3"
         ],
         "quotes": [
-          "the subtitles only work for them and not whats coming from my mic",
-          "2 brodcaster"
+          "it still doesnt work",
+          "1 all of it"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a canister method for the broadcaster to publish caption updates for a session code.",
-        "Backend exposes a canister query method for viewers to retrieve the most recent caption (and timestamp) for a session code.",
-        "Caption publishing is rejected if the session code does not exist or the session has ended, with a clear trapped error message (English)."
+        "With mic enabled on the broadcaster page, viewers hear the broadcaster audio during a live session.",
+        "Toggling the broadcaster mic OFF stops audio for viewers; toggling it back ON restores audio without requiring a page refresh.",
+        "The viewer video element is configured to play audio (not muted) and remains compatible with mobile autoplay constraints (e.g., playsInline)."
       ]
     },
     {
-      "id": "REQ-40",
-      "text": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+      "id": "REQ-44",
+      "text": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-5",
-          "msg-6"
+          "msg-2",
+          "msg-3"
         ],
         "quotes": [
-          "the subtitles only work for them and not whats coming from my mic",
-          "2 brodcaster"
+          "the subtitles are at the top",
+          "2top of the video 3both"
         ]
       },
       "acceptanceCriteria": [
-        "Viewer subtitle toggle controls whether broadcaster captions are fetched/displayed; disabling subtitles stops polling for captions.",
-        "ViewerSubtitlesOverlay continues to show “Subtitles are not supported in this browser” only when subtitles truly cannot be displayed; it must not imply the viewer needs speech recognition to see broadcaster captions.",
-        "Captions render inside the video container at the same overlay position as today and update as new caption text arrives."
+        "On the Viewer Watch page, enabled subtitles render near the top of the video container (not the bottom).",
+        "On the Broadcaster page camera preview, the live transcript/caption overlay renders near the top of the video container (not the bottom).",
+        "Caption overlays do not overlap the on-camera bottom scoreboard overlay (scoreboard remains unobstructed)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if a state upgrade is actually required.",
-    "Do not modify any files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
-    "Use English for all user-facing UI/error text."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo changes if existing stable state requires migration.",
+    "Do not edit frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui.",
+    "Use English for any user-facing text.",
+    "Keep streaming implementation browser-based with backend-assisted signaling/state; do not add third-party streaming providers."
   ],
   "nonGoals": [
-    "Do not add third-party streaming providers or external speech-to-text services.",
-    "Do not add third-party authentication (only Internet Identity is allowed).",
-    "Do not implement real-time WebSocket-based caption delivery; use existing request/response + polling patterns (React Query)."
+    "Adding new unrelated UI features beyond stream reliability and moving subtitle overlay position.",
+    "Implementing third-party authentication (only Internet Identity is allowed).",
+    "Adding external databases or non-Motoko backend services."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

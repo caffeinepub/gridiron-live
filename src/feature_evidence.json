@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-viewer-watch-experience-so-viewers-can-see-the-broadcaster-s-live-camera-video-instead-of-a-black-empty-screen-when-the-session-lifecycle-is-live",
-      "featureTitle": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
+      "featureId": "feature-replace-the-current-placeholder-viewer-live-stream-implementation-so-that-viewers-can-actually-connect-to-and-play-the-broadcaster-s-live-stream-when-a-session-is-in-the-live-lifecycle-state-no-forced-stream-unavailable-simulation",
+      "featureTitle": "Replace the current placeholder viewer live-stream implementation so that viewers can actually connect to and play the broadcaster’s live stream when a session is in the \"live\" lifecycle state (no forced \"Stream Unavailable\" simulation).",
       "files": [
         "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-        "frontend/src/hooks/useViewerLiveStream.ts",
-        "frontend/src/pages/ViewerWatchPage.tsx"
+        "frontend/src/hooks/useViewerLiveStream.ts"
       ],
       "components": [
         "camera@1.0.0",
@@ -18,15 +17,36 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-36"
+        "REQ-41"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-viewers-reliably-hear-the-broadcaster-during-a-live-session",
-      "featureTitle": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
+      "featureId": "feature-ensure-the-broadcaster-to-viewer-streaming-pipeline-is-fully-implemented-end-to-end-including-session-scoped-signaling-state-in-the-motoko-backend-if-required-so-that-a-viewer-joining-with-a-valid-session-code-can-establish-a-working-in-browser-real-time-connection-to-the-broadcaster-video-audio",
+      "featureTitle": "Ensure the broadcaster-to-viewer streaming pipeline is fully implemented end-to-end, including session-scoped signaling/state in the Motoko backend if required, so that a viewer joining with a valid session code can establish a working in-browser real-time connection to the broadcaster (video + audio).",
       "files": [
-        "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
+        "frontend/src/hooks/useBroadcastMediaStream.ts",
+        "frontend/src/hooks/useViewerLiveStream.ts",
+        "frontend/src/pages/BroadcasterPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-42"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-the-outgoing-stream-includes-an-enabled-audio-track-and-viewers-can-reliably-hear-the-broadcaster-during-a-live-session",
+      "featureTitle": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, the outgoing stream includes an enabled audio track and viewers can reliably hear the broadcaster during a live session.",
+      "files": [
+        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
         "frontend/src/hooks/useBroadcastMediaStream.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
@@ -39,39 +59,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-37"
+        "REQ-43"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-change-subtitles-so-that-viewer-subtitles-reflect-the-broadcaster-s-speech-broadcaster-microphone-rather-than-the-viewer-s-own-microphone",
-      "featureTitle": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
-      "files": [
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/hooks/useSpeechRecognition.ts",
-        "frontend/src/pages/BroadcasterPage.tsx",
-        "frontend/src/pages/ViewerWatchPage.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-38"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-viewer-watch-subtitles-ui-to-consume-broadcaster-published-captions-polling-via-react-query-and-display-them-using-the-existing-in-video-caption-overlay-styling",
-      "featureTitle": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+      "featureId": "feature-move-the-subtitles-captions-overlay-to-the-top-of-the-video-inside-the-video-container-for-both-the-broadcaster-camera-preview-and-the-viewer-watch-view-while-keeping-existing-styling-readable-over-video",
+      "featureTitle": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
       "files": [
         "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/ViewerWatchPage.tsx"
+        "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -82,7 +79,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-40"
+        "REQ-44"
       ],
       "confidence": "high"
     }

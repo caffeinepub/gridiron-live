@@ -86,6 +86,7 @@ export default function BroadcasterPage() {
 
   const publishCaptionMutation = usePublishCaption();
   const lastPublishedCaptionRef = useRef('');
+  const peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>(new Map());
 
   // Start camera when going live
   useEffect(() => {
@@ -132,6 +133,30 @@ export default function BroadcasterPage() {
       });
     }
   }, [micEnabled, micActive, audioTrack, videoRef]);
+
+  // WebRTC broadcasting setup (prepared for when backend signaling is available)
+  useEffect(() => {
+    if (!isLive || !videoRef.current || !videoRef.current.srcObject) {
+      return;
+    }
+
+    const broadcastStream = videoRef.current.srcObject as MediaStream;
+
+    // TODO: When backend adds WebRTC signaling endpoints:
+    // 1. Create RTCPeerConnection for each viewer
+    // 2. Add broadcast stream tracks to peer connections
+    // 3. Create offers and send to backend
+    // 4. Listen for answers and ICE candidates from backend
+    // 5. Handle viewer connections/disconnections
+
+    // Cleanup function
+    return () => {
+      peerConnectionsRef.current.forEach((pc) => {
+        pc.close();
+      });
+      peerConnectionsRef.current.clear();
+    };
+  }, [isLive, videoRef]);
 
   // Start/stop broadcaster captions
   useEffect(() => {
@@ -356,17 +381,26 @@ export default function BroadcasterPage() {
                   )}
 
                   <div
-                    className="relative bg-black rounded-lg overflow-hidden"
-                    style={{ aspectRatio: '16/9', minHeight: '400px' }}
+                    className="relative w-full bg-black rounded-lg overflow-hidden"
+                    style={{ aspectRatio: '16/9', minHeight: '300px' }}
                   >
                     <video
                       ref={videoRef}
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                     />
                     <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+                    {/* Broadcaster transcript overlay - moved to top */}
+                    {captionsEnabled && transcript && (
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg z-20">
+                        <p className="text-white text-center text-sm md:text-base leading-relaxed">
+                          {transcript}
+                        </p>
+                      </div>
+                    )}
 
                     {activeFlagOverlay && (
                       <FlagAnnouncementOverlay 
@@ -374,13 +408,24 @@ export default function BroadcasterPage() {
                         side={activeFlagOverlay.side}
                       />
                     )}
+
                     {scoreboard && <OnCameraScoreboardOverlay scoreboard={scoreboard} />}
-                    
-                    {captionsEnabled && transcript && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg">
-                        <p className="text-white text-center text-sm md:text-base leading-relaxed">
-                          {transcript}
-                        </p>
+
+                    {!cameraActive && !cameraLoading && !cameraError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <div className="text-center text-white">
+                          <VideoOff className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">Camera not active</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {cameraLoading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                        <div className="text-center text-white">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2" />
+                          <p className="text-sm">Starting camera...</p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -388,7 +433,7 @@ export default function BroadcasterPage() {
               </Card>
 
               <div className="grid md:grid-cols-2 gap-4">
-                <FootballControlPanel sessionCode={sessionCode} scoreboard={scoreboard} />
+                <FootballControlPanel sessionCode={sessionCode} disabled={!scoreboard} />
                 {scoreboard && (
                   <ScoreboardControls sessionCode={sessionCode} currentScoreboard={scoreboard} />
                 )}
@@ -401,7 +446,6 @@ export default function BroadcasterPage() {
                   onClick={handleEndBroadcast}
                   disabled={status === 'ending'}
                 >
-                  <VideoOff className="mr-2 h-5 w-5" />
                   End Broadcast
                 </Button>
               </div>

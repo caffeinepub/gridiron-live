@@ -1,87 +1,61 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T22:24:18.114Z",
-  "summary": "The diff adds scaffolding for viewer video playback UI (video element + error overlay), introduces broadcaster-side speech recognition and caption publishing hooks, and adds backend state for storing captions with a migration. However, the viewer live stream hook currently simulates a failure and does not attach/play a real incoming stream, and backend caption publish/query methods are not evidenced in the provided backend diff. Viewer subtitle overlay also no longer shows the specified 'Subtitles are not supported in this browser' message under any condition, and caption-unavailable signaling to viewers is left as a TODO.",
+  "generatedAt": "2026-02-17T22:44:14.322Z",
+  "summary": "REQ-44 (move subtitles overlay to top) appears implemented for viewer via absolute positioning at top. However, REQ-41/REQ-42 (real viewer playback with no simulated failure; end-to-end signaling/state) are not implemented: the viewer WebRTC hook still contains TODO signaling and explicitly sets an error that signaling is not implemented, so viewers will not receive the broadcaster stream. REQ-43 (reliable audio end-to-end) is only partially addressed on broadcaster side by managing audio track enable/disable, but cannot be satisfied without the missing end-to-end viewer connection/signaling and explicit viewer audio playback configuration in the video element.",
   "missing_requirements": [
     {
-      "id": "REQ-36",
-      "requirement": "When a session is live, the Viewer Watch page renders a real video element and attempts to play the incoming stream; if negotiation fails, show a clear in-player error state; overlays remain rendered within the video container.",
-      "reason": "Although a <video> element and an in-player error overlay were added, the live stream hook explicitly simulates a connection attempt and then sets an error stating the stream cannot be displayed, with no evidence of attaching an actual incoming MediaStream to the video element or attempting playback.",
+      "id": "REQ-41",
+      "requirement": "Replace the placeholder viewer live-stream implementation so viewers can actually connect to and play the broadcaster’s live stream when the session is live; remove the simulated failure path; Retry Connection performs a real reconnection attempt.",
+      "reason": "The viewer hook still does not negotiate a connection and explicitly sets an error stating signaling is not implemented after a timeout; this prevents actual playback and is effectively a forced failure path. While a retry function exists in UI, the underlying connection flow does not complete without signaling.",
       "evidence": [
         "frontend/src/hooks/useViewerLiveStream.ts",
         "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
       ]
     },
     {
-      "id": "REQ-37",
-      "requirement": "Broadcaster-to-viewer audio must reliably be delivered when mic is ON, including for newly joined viewers, and mic toggling must stop/start sending audio without restarting the broadcast.",
-      "reason": "A helper hook to compose a broadcast stream with an audio track exists, but the diff summary provides no evidence that this composed stream is actually used in the broadcaster’s WebRTC/stream publishing path, nor that newly joined viewers receive audio without restarting. The viewer stream path also appears unimplemented (simulated failure), so end-to-end audio delivery is not demonstrated.",
+      "id": "REQ-42",
+      "requirement": "Implement the broadcaster-to-viewer streaming pipeline end-to-end including session-code-scoped backend signaling/state endpoints as needed so a viewer joining by code (including late join) can establish working in-browser real-time video+audio.",
+      "reason": "No backend signaling/state endpoints are shown in the diff, and the viewer WebRTC hook includes TODOs for sending offers/answers/ICE candidates and then errors out indicating backend signaling is not implemented, so end-to-end negotiation cannot succeed (including late join).",
       "evidence": [
-        "frontend/src/hooks/useBroadcastMediaStream.ts",
         "frontend/src/hooks/useViewerLiveStream.ts"
       ]
     },
     {
-      "id": "REQ-38",
-      "requirement": "Viewer subtitles must reflect broadcaster speech; enabling viewer subtitles must not request/use viewer mic; if broadcaster SpeechRecognition unsupported/errors, show a clear English message to both broadcaster and viewers that subtitles are unavailable.",
-      "reason": "Viewer polling for captions is present, but there is no evidenced mechanism for viewers to learn that broadcaster subtitles are unavailable (ViewerWatchPage hardcodes captionsUnavailable=false). Also, while broadcaster speech recognition reports errors via the hook, the diff summary does not show explicit UI messaging to viewers when broadcaster SpeechRecognition is unsupported/errors.",
+      "id": "REQ-43",
+      "requirement": "Fix broadcaster-to-viewer audio so mic ON sends enabled audio track; mic OFF stops audio; mic ON restores without refresh; viewer video element plays audio (not muted) and works with mobile autoplay constraints.",
+      "reason": "Broadcaster-side audio track enabling/disabling is implemented in a new hook, but viewer audio cannot be verified/achieved because the viewer connection pipeline is not implemented and the viewer video element shown does not explicitly configure audio playback (e.g., no explicit unmute/volume handling) beyond lacking a muted attribute.",
       "evidence": [
-        "frontend/src/pages/ViewerWatchPage.tsx",
-        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-        "frontend/src/hooks/useSpeechRecognition.ts"
-      ]
-    },
-    {
-      "id": "REQ-39",
-      "requirement": "Backend must expose a method for broadcaster to publish caption updates for a session code and a query method for viewers to retrieve the most recent caption (and timestamp), rejecting publishes if the session does not exist or has ended with a clear trapped English error.",
-      "reason": "Backend state was extended to include captions and a migration was added, but the provided backend/main.mo snippet does not show any new canister methods for publishing captions or querying the latest caption, nor the required rejection behavior for nonexistent/ended sessions.",
-      "evidence": [
-        "backend/main.mo",
-        "backend/migration.mo"
-      ]
-    },
-    {
-      "id": "REQ-40",
-      "requirement": "Viewer subtitles UI must poll for broadcaster-published captions via React Query when enabled, stop polling when disabled, and ViewerSubtitlesOverlay must only show 'Subtitles are not supported in this browser' when subtitles truly cannot be displayed (and must not imply viewer needs speech recognition).",
-      "reason": "ViewerWatchPage appears to conditionally fetch captions when subtitlesEnabled is true, but ViewerSubtitlesOverlay no longer contains the 'Subtitles are not supported in this browser' message at all, so it cannot satisfy the requirement to show it only under true unsupported conditions.",
-      "evidence": [
-        "frontend/src/pages/ViewerWatchPage.tsx",
-        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx"
+        "frontend/src/hooks/useBroadcastMediaStream.ts",
+        "frontend/src/hooks/useViewerLiveStream.ts",
+        "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Viewer live stream connection behavior that intentionally simulates a failed connection and displays a 'stream not yet available' message instead of actually attempting to negotiate/attach the broadcast stream.",
-      "reason": "This introduces placeholder behavior not requested by the BuildRequest, which asked to fix the black screen by rendering/playing the real incoming stream during live sessions.",
+      "description": "Adds a WebRTC viewer connection attempt that uses Google STUN servers and then surfaces an explicit 'signaling not yet implemented' error message.",
+      "reason": "The BuildRequest requires implementing real live playback and signaling/state; adding a non-functional placeholder flow with hardcoded STUN servers and an intentional error path is not requested as a deliverable feature.",
       "evidence": [
         "frontend/src/hooks/useViewerLiveStream.ts"
       ]
     },
     {
-      "description": "Broadcaster mic toggle 'Retry Mic' UI state (hasError/onRetry) and associated button labeling.",
-      "reason": "The BuildRequest focuses on reliable audio delivery and mic toggling behavior, but does not request a new retry-mode UI control for the mic toggle.",
+      "description": "Introduces a 'Broadcaster captions are unavailable' warning banner overlay for viewers.",
+      "reason": "REQ-44 only requests moving captions/subtitles overlay position; adding a new unavailable-state banner is extra behavior/UI not explicitly requested.",
       "evidence": [
-        "frontend/src/components/broadcast/BroadcasterMicToggle.tsx"
+        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.78,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
     "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
     "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
     "frontend/src/hooks/useBroadcastMediaStream.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/hooks/useSpeechRecognition.ts",
     "frontend/src/hooks/useViewerLiveStream.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
-    "frontend/src/pages/ViewerJoinPage.tsx",
-    "frontend/src/pages/ViewerWatchPage.tsx",
     "project_state.json"
   ]
 }

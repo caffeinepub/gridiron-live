@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix Viewer Watch playback so viewers reliably see and hear the broadcaster live stream, and update subtitles to reflect the broadcaster’s speech via backend-delivered captions.
+**Goal:** Make viewer live-stream playback work (video + audio) and move captions/subtitles to the top of the video on both broadcaster and viewer pages.
 
 **Planned changes:**
-- Update Viewer Watch to always render a real video element during live sessions and attempt playback of the incoming stream; add an in-player English error state when playback/negotiation fails while keeping overlays functional.
-- Fix broadcaster audio delivery so the broadcast stream includes an enabled microphone audio track when mic is ON; ensure new viewers can hear without requiring a session restart; ensure mic toggle reliably stops/starts audio without restarting the broadcast.
-- Move subtitle generation to the broadcaster: capture captions from the broadcaster microphone using browser SpeechRecognition when available; show clear English “subtitles unavailable” messaging on unsupported/error cases without interrupting video/audio.
-- Add backend canister methods for broadcaster caption publishing (with timestamp) and viewer querying of the latest caption by session code; reject publishing for non-existent or ended sessions with clear trapped English errors.
-- Update Viewer Watch subtitles UI to poll (React Query) for broadcaster-published captions only when subtitles are enabled; stop polling when disabled; continue using the existing in-video caption overlay styling and correct any misleading “browser not supported” messaging.
+- Replace the viewer “Stream Unavailable” placeholder flow with real connection/playback logic that attaches the broadcaster’s live stream when the session lifecycle state is "live".
+- Remove the simulated failure/timeout path that forces an error state; ensure “Retry Connection” performs a real reconnection attempt without a full page reload.
+- Implement/complete the end-to-end broadcaster-to-viewer streaming pipeline (including any session-code-scoped signaling/state in the Motoko backend as needed) so viewers can join a live session and late-join successfully without third-party providers.
+- Fix audio track handling so broadcaster mic ON sends an enabled audio track, viewer playback is not muted, and mic toggling OFF/ON reliably stops/restores viewer audio without refresh (while remaining compatible with mobile playback constraints such as playsInline).
+- Move captions/subtitles overlay to render near the top inside the video container for both broadcaster preview and viewer watch view, keeping readability and avoiding overlap with the bottom scoreboard overlay.
 
-**User-visible outcome:** Viewers can watch the broadcaster’s live video (not a black screen), hear the broadcaster when the mic is enabled, and see subtitles that match the broadcaster’s speech (with clear error states when captions aren’t available).
+**User-visible outcome:** Viewers who enter a valid live session code can reliably see and hear the broadcaster in real time (including late-joining), can retry and recover from transient disconnects, and captions display at the top of the video without covering the scoreboard.
