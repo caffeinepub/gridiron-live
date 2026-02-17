@@ -2,11 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-ensure-the-broadcaster-stream-captures-and-transmits-microphone-audio-so-viewers-can-hear-the-broadcaster-reliably-during-a-live-session-i-e-the-outgoing-stream-must-include-an-audio-track-when-mic-is-enabled",
-      "featureTitle": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
+      "featureId": "feature-fix-the-viewer-watch-experience-so-viewers-can-see-the-broadcaster-s-live-camera-video-instead-of-a-black-empty-screen-when-the-session-lifecycle-is-live",
+      "featureTitle": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
       "files": [
-        "frontend/src/hooks/useMicrophone.ts",
-        "frontend/src/pages/BroadcasterPage.tsx"
+        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+        "frontend/src/hooks/useViewerLiveStream.ts",
+        "frontend/src/pages/ViewerWatchPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -17,15 +18,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-33"
+        "REQ-36"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-a-broadcaster-mic-on-off-toggle-control-during-live-streaming-defaulting-to-mic-on-when-the-broadcast-starts-and-make-the-toggle-immediately-affect-whether-microphone-audio-is-sent-to-viewers",
-      "featureTitle": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
+      "featureId": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-viewers-reliably-hear-the-broadcaster-during-a-live-session",
+      "featureTitle": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
       "files": [
         "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
+        "frontend/src/hooks/useBroadcastMediaStream.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -37,16 +39,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-34"
+        "REQ-37"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-broadcaster-side-permission-error-handling-to-cover-microphone-access-in-addition-to-camera-including-clear-english-messaging-when-mic-is-blocked-unavailable-and-guidance-to-enable-it",
-      "featureTitle": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
+      "featureId": "feature-change-subtitles-so-that-viewer-subtitles-reflect-the-broadcaster-s-speech-broadcaster-microphone-rather-than-the-viewer-s-own-microphone",
+      "featureTitle": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
       "files": [
-        "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
-        "frontend/src/pages/BroadcasterPage.tsx"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/hooks/useSpeechRecognition.ts",
+        "frontend/src/pages/BroadcasterPage.tsx",
+        "frontend/src/pages/ViewerWatchPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -57,7 +61,28 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-35"
+        "REQ-38"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-viewer-watch-subtitles-ui-to-consume-broadcaster-published-captions-polling-via-react-query-and-display-them-using-the-existing-in-video-caption-overlay-styling",
+      "featureTitle": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+      "files": [
+        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/ViewerWatchPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-40"
       ],
       "confidence": "high"
     }

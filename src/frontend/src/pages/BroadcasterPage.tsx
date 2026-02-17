@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Video, VideoOff } from 'lucide-react';
+import { ArrowLeft, Video, VideoOff, AlertCircle } from 'lucide-react';
 import { useBroadcasterSession } from '../hooks/useBroadcasterSession';
 import { useCamera } from '../camera/useCamera';
 import { useMicrophone } from '../hooks/useMicrophone';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
+import { usePublishCaption } from '../hooks/useQueries';
 import SessionCodeCard from '../components/broadcast/SessionCodeCard';
 import FootballControlPanel from '../components/broadcast/FootballControlPanel';
 import ScoreboardControls from '../components/broadcast/ScoreboardControls';
@@ -29,6 +31,7 @@ export default function BroadcasterPage() {
   const [selectedTeam1Icon, setSelectedTeam1Icon] = useState<TeamIcon | null>(null);
   const [selectedTeam2Icon, setSelectedTeam2Icon] = useState<TeamIcon | null>(null);
   const [micEnabled, setMicEnabled] = useState(true);
+  const [captionsEnabled, setCaptionsEnabled] = useState(false);
   const { status, sessionCode, startSession, endSession, isLive, isIdle } = useBroadcasterSession();
   const { data: events = [] } = useGetEvents(sessionCode || undefined);
   const { data: scoreboard } = useGetScoreboard(sessionCode || undefined);
@@ -47,6 +50,7 @@ export default function BroadcasterPage() {
     isLoading: cameraLoading,
     startCamera,
     stopCamera,
+    retry: retryCamera,
     videoRef,
     canvasRef,
   } = useCamera({
@@ -64,71 +68,96 @@ export default function BroadcasterPage() {
     stopMicrophone,
     retry: retryMicrophone,
     audioTrack,
+    audioStream,
   } = useMicrophone({
     echoCancellation: true,
     noiseSuppression: true,
     autoGainControl: true,
   });
 
-  // Reference to track if we've added audio to the video stream
-  const audioAddedRef = useRef(false);
+  const {
+    isSupported: speechSupported,
+    isListening: speechListening,
+    transcript,
+    lastError: speechError,
+    startListening: startSpeech,
+    stopListening: stopSpeech,
+  } = useSpeechRecognition();
 
-  // Start camera and microphone when going live
+  const publishCaptionMutation = usePublishCaption();
+  const lastPublishedCaptionRef = useRef('');
+
+  // Start camera when going live
   useEffect(() => {
     if (isLive && !cameraActive && !cameraLoading) {
       startCamera();
     }
   }, [isLive, cameraActive, cameraLoading, startCamera]);
 
+  // Start microphone when going live and mic is enabled
   useEffect(() => {
     if (isLive && micEnabled && !micActive && !micLoading && micSupported !== false) {
       startMicrophone();
     }
   }, [isLive, micEnabled, micActive, micLoading, micSupported, startMicrophone]);
 
-  // Merge audio track into video stream when both are available
+  // Manage audio track in video stream
   useEffect(() => {
-    if (cameraActive && micActive && audioTrack && videoRef.current && videoRef.current.srcObject) {
-      const videoStream = videoRef.current.srcObject as MediaStream;
-      
-      // Check if audio track is already added
-      const existingAudioTracks = videoStream.getAudioTracks();
+    if (!videoRef.current || !videoRef.current.srcObject) return;
+
+    const videoStream = videoRef.current.srcObject as MediaStream;
+    const existingAudioTracks = videoStream.getAudioTracks();
+
+    if (micEnabled && micActive && audioTrack) {
+      // Add audio track if not already present
       const audioAlreadyAdded = existingAudioTracks.some(track => track.id === audioTrack.id);
-      
       if (!audioAlreadyAdded) {
-        // Remove any existing audio tracks first
+        // Remove old audio tracks
         existingAudioTracks.forEach(track => {
           videoStream.removeTrack(track);
-          track.stop();
         });
-        
-        // Add the new audio track
+        // Add new audio track
         videoStream.addTrack(audioTrack);
-        audioAddedRef.current = true;
       }
-    }
-  }, [cameraActive, micActive, audioTrack, videoRef]);
-
-  // Remove audio track when mic is disabled
-  useEffect(() => {
-    if (!micEnabled && videoRef.current && videoRef.current.srcObject) {
-      const videoStream = videoRef.current.srcObject as MediaStream;
-      const audioTracks = videoStream.getAudioTracks();
-      
-      audioTracks.forEach(track => {
-        videoStream.removeTrack(track);
-        track.stop();
+      // Ensure track is enabled
+      audioTrack.enabled = true;
+    } else {
+      // Disable or remove audio tracks when mic is off
+      existingAudioTracks.forEach(track => {
+        if (micEnabled) {
+          track.enabled = false;
+        } else {
+          videoStream.removeTrack(track);
+        }
       });
-      
-      audioAddedRef.current = false;
-      stopMicrophone();
     }
-  }, [micEnabled, stopMicrophone, videoRef]);
+  }, [micEnabled, micActive, audioTrack, videoRef]);
+
+  // Start/stop broadcaster captions
+  useEffect(() => {
+    if (isLive && captionsEnabled && !speechListening && speechSupported) {
+      startSpeech();
+    } else if ((!captionsEnabled || !isLive) && speechListening) {
+      stopSpeech();
+    }
+  }, [isLive, captionsEnabled, speechListening, speechSupported, startSpeech, stopSpeech]);
+
+  // Publish captions to backend
+  useEffect(() => {
+    if (!sessionCode || !transcript || transcript === lastPublishedCaptionRef.current) {
+      return;
+    }
+
+    lastPublishedCaptionRef.current = transcript;
+    publishCaptionMutation.mutate({ sessionCode, text: transcript });
+  }, [transcript, sessionCode, publishCaptionMutation]);
 
   const handleStartBroadcast = async () => {
     if (!broadcasterName.trim() || !selectedTeam1Icon || !selectedTeam2Icon) return;
     try {
       await startSession(broadcasterName.trim(), selectedTeam1Icon, selectedTeam2Icon);
+      // Enable captions by default
+      setCaptionsEnabled(true);
     } catch (error) {
       console.error('Failed to start broadcast:', error);
     }
@@ -136,6 +165,9 @@ export default function BroadcasterPage() {
 
   const handleEndBroadcast = async () => {
     try {
+      if (speechListening) {
+        stopSpeech();
+      }
       await endSession();
       await stopCamera();
       await stopMicrophone();
@@ -145,16 +177,7 @@ export default function BroadcasterPage() {
   };
 
   const handleMicToggle = async () => {
-    if (micEnabled) {
-      // Turn mic off
-      setMicEnabled(false);
-    } else {
-      // Turn mic on
-      setMicEnabled(true);
-      if (!micActive && micSupported !== false) {
-        await startMicrophone();
-      }
-    }
+    setMicEnabled(!micEnabled);
   };
 
   const handleMicRetry = async (): Promise<boolean> => {
@@ -163,6 +186,10 @@ export default function BroadcasterPage() {
       setMicEnabled(true);
     }
     return success;
+  };
+
+  const handleCameraRetry = async (): Promise<boolean> => {
+    return await retryCamera();
   };
 
   const canStartBroadcast = 
@@ -298,9 +325,9 @@ export default function BroadcasterPage() {
                     <span>Camera Preview</span>
                     <div className="flex items-center gap-3">
                       <BroadcasterMicToggle
-                        micEnabled={micEnabled && micActive}
+                        micEnabled={micEnabled}
                         isLoading={micLoading}
-                        disabled={!cameraActive}
+                        disabled={!isLive}
                         onToggle={handleMicToggle}
                         onRetry={handleMicRetry}
                         hasError={!!micError}
@@ -313,25 +340,34 @@ export default function BroadcasterPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative bg-black rounded-lg overflow-hidden" style={{ aspectRatio: '16/9', minHeight: '300px' }}>
+                  {cameraError && <PermissionsHelp error={cameraError} onRetry={handleCameraRetry} />}
+                  {micError && <MicrophonePermissionsHelp error={micError} onRetry={handleMicRetry} />}
+                  
+                  {speechError && !speechSupported && (
+                    <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/50 rounded-lg flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm">
+                        <p className="font-medium text-yellow-500">Broadcaster captions unavailable</p>
+                        <p className="text-muted-foreground mt-1">
+                          Speech recognition is not supported in your browser. Viewers will not see captions, but video and audio will continue normally.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    className="relative bg-black rounded-lg overflow-hidden"
+                    style={{ aspectRatio: '16/9', minHeight: '400px' }}
+                  >
                     <video
                       ref={videoRef}
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
-                    <canvas ref={canvasRef} className="hidden" />
-                    {cameraError && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-                        <PermissionsHelp error={cameraError} onRetry={startCamera} />
-                      </div>
-                    )}
-                    {micError && !cameraError && (
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-                        <MicrophonePermissionsHelp error={micError} onRetry={handleMicRetry} />
-                      </div>
-                    )}
+                    <canvas ref={canvasRef} style={{ display: 'none' }} />
+
                     {activeFlagOverlay && (
                       <FlagAnnouncementOverlay 
                         flagEvent={activeFlagOverlay.flagEvent} 
@@ -339,34 +375,36 @@ export default function BroadcasterPage() {
                       />
                     )}
                     {scoreboard && <OnCameraScoreboardOverlay scoreboard={scoreboard} />}
+                    
+                    {captionsEnabled && transcript && (
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg">
+                        <p className="text-white text-center text-sm md:text-base leading-relaxed">
+                          {transcript}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              <FootballControlPanel 
-                sessionCode={sessionCode} 
-                disabled={!cameraActive} 
-                scoreboard={scoreboard}
-              />
+              <div className="grid md:grid-cols-2 gap-4">
+                <FootballControlPanel sessionCode={sessionCode} scoreboard={scoreboard} />
+                {scoreboard && (
+                  <ScoreboardControls sessionCode={sessionCode} currentScoreboard={scoreboard} />
+                )}
+              </div>
 
-              {scoreboard && (
-                <ScoreboardControls
-                  sessionCode={sessionCode}
-                  currentScoreboard={scoreboard}
-                  disabled={!cameraActive}
-                />
-              )}
-
-              <Button
-                size="lg"
-                variant="destructive"
-                className="w-full"
-                onClick={handleEndBroadcast}
-                disabled={status === 'ending'}
-              >
-                <VideoOff className="mr-2 h-5 w-5" />
-                End Broadcast
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={handleEndBroadcast}
+                  disabled={status === 'ending'}
+                >
+                  <VideoOff className="mr-2 h-5 w-5" />
+                  End Broadcast
+                </Button>
+              </div>
             </div>
 
             <div className="lg:col-span-1">

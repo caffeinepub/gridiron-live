@@ -7,6 +7,11 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export interface Caption {
+    sessionCode: string;
+    text: string;
+    timestamp: Time;
+}
 export type Time = bigint;
 export interface Scoreboard {
     team1Score: bigint;
@@ -43,10 +48,13 @@ export enum TeamRole {
     offense = "offense"
 }
 export interface backendInterface {
+    addCaption(sessionCode: string, text: string): Promise<void>;
     addEvent(sessionCode: string, description: string, eventType: EventType): Promise<void>;
     addFlagEvent(sessionCode: string, team: string, reason: string): Promise<void>;
     endSession(sessionCode: string): Promise<void>;
+    getAllCaptions(sessionCode: string): Promise<Array<Caption>>;
     getEvents(sessionCode: string): Promise<Array<Event>>;
+    getLatestCaption(sessionCode: string): Promise<Caption | null>;
     getScoreboard(sessionCode: string): Promise<Scoreboard>;
     getSessionMetadata(sessionCode: string): Promise<[string, Time, Time | null]>;
     isValidSessionCode(sessionCode: string): Promise<boolean>;

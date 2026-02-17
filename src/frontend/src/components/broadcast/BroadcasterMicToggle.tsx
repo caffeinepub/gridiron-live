@@ -6,7 +6,7 @@ interface BroadcasterMicToggleProps {
   isLoading: boolean;
   disabled?: boolean;
   onToggle: () => void;
-  onRetry?: () => void;
+  onRetry?: () => Promise<boolean>;
   hasError?: boolean;
 }
 

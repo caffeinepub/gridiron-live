@@ -1,70 +1,114 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix broadcaster microphone audio capture and add live mic toggle",
+  "title": "VillanSpoon Live: fix viewer playback, broadcaster audio delivery, and broadcaster-sourced subtitles",
   "requirements": [
     {
-      "id": "REQ-33",
-      "summary": "Capture microphone audio on the broadcaster and ensure the outgoing live stream includes an audio track when mic is enabled, with a clear fallback state when mic is unavailable.",
+      "id": "REQ-36",
+      "summary": "Render and play the broadcaster live video stream on Viewer Watch (avoid black screen) with an in-player error state while preserving overlays.",
       "acceptanceCriteria": [
-        "When a broadcast is live and the broadcaster has granted microphone permission, viewers hear the broadcaster audio while watching the stream.",
-        "The broadcaster stream includes an audio track (not video-only) when mic is enabled.",
-        "If microphone permission is denied/unavailable, the UI clearly indicates that audio is not being sent and provides a retry path without breaking the video stream."
+        "When a session is live, the Viewer Watch page renders a real video element (not just status text) and attempts to play the incoming stream.",
+        "If the incoming stream is not available/negotiation fails, show a clear in-player error state (English) instead of a silent black screen.",
+        "Overlays (latest event, flag overlay, scoreboard, subtitles) remain rendered within the video container and do not break video playback."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useMicrophone.ts",
-          "operation": "create",
-          "description": "Create a dedicated React hook to request and manage microphone capture (permission/unsupported/not-found states, loading, retry), and expose the current MediaStreamTrack/MediaStream for integration into the live broadcast stream. Ensure it supports re-acquire after denial or device change."
+          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+          "operation": "modify",
+          "description": "Replace the live-state status-only UI with a real <video> element inside the existing aspect-ratio container; accept stream/playback state + error props and render an English in-player error overlay when playback/negotiation fails while continuing to render children overlays above the video."
         },
         {
-          "path": "frontend/src/pages/BroadcasterPage.tsx",
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
           "operation": "modify",
-          "description": "Integrate microphone capture into the broadcaster live flow: on broadcast start, attempt to acquire mic (default ON) and merge an audio track into the same outgoing MediaStream used for broadcasting (while keeping the camera preview/video running). Use the selected \"camera\" component via its read-only useCamera hook for video capture; Verify the component's usage instructions before implementing. Add logic to avoid duplicating audio tracks and to keep video-only streaming functional when mic is unavailable/blocked."
+          "description": "Wire the Viewer Watch page to request/attach the incoming broadcast stream when lifecycle is live; pass video ref/stream status into ViewerVideoPlayer; ensure overlays (LatestEventOverlay, FlagAnnouncementOverlay, OnCameraScoreboardOverlay, ViewerSubtitlesOverlay) remain within the same relative video container."
+        },
+        {
+          "path": "frontend/src/hooks/useViewerLiveStream.ts",
+          "operation": "create",
+          "description": "Create a hook that manages viewer-side live stream attachment: owns the HTMLVideoElement ref, attempts to start playback when live, tracks connection/negotiation failures, and exposes a stable error message (English) for the in-player error state."
         }
       ]
     },
     {
-      "id": "REQ-34",
-      "summary": "Add an in-stream mic on/off toggle (default ON) that immediately controls whether microphone audio is sent to viewers without interrupting video.",
+      "id": "REQ-37",
+      "summary": "Ensure broadcaster microphone audio is included (and toggleable) in the outgoing broadcast stream so viewers reliably hear it without restarting sessions.",
       "acceptanceCriteria": [
-        "A mic toggle is visible on the Broadcaster live view while streaming (not just during pre-live setup).",
-        "Mic defaults to ON at the start of a broadcast.",
-        "Toggling mic OFF stops sending microphone audio to viewers without ending the broadcast or stopping video.",
-        "Toggling mic back ON resumes sending microphone audio to viewers (without requiring restarting the whole session, unless the browser requires re-permission/re-acquire—in that case show a clear instruction and a retry action).",
-        "The toggle label/state uses English user-facing text (e.g., \"Mic On\" / \"Mic Off\")."
+        "During a live session with mic ON, the outgoing stream used for broadcasting includes an enabled audio track derived from the broadcaster microphone capture.",
+        "A newly joined viewer can hear audio without needing the broadcaster to restart the session.",
+        "Toggling the broadcaster mic OFF stops sending microphone audio to viewers; toggling back ON restores viewer audio without restarting the entire broadcast."
       ],
       "file_operations": [
+        {
+          "path": "frontend/src/pages/BroadcasterPage.tsx",
+          "operation": "modify",
+          "description": "Refactor outgoing media composition so the broadcast stream maintains stable track objects for the full live session: add mic audio track once, then toggle delivery by setting track.enabled (or replacing the track) instead of stopping/removing tracks in a way that breaks existing/new viewer playback; keep mic toggling fully functional without restarting broadcast."
+        },
+        {
+          "path": "frontend/src/hooks/useBroadcastMediaStream.ts",
+          "operation": "create",
+          "description": "Create a hook that composes a stable outgoing MediaStream from the camera preview stream (from the selected camera component) plus the microphone track, and exposes helpers to enable/disable mic audio delivery without tearing down the stream; verify the component's usage instructions before implementing."
+        },
         {
           "path": "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
-          "operation": "create",
-          "description": "Create a small UI control for the broadcaster live view that shows a mic toggle with English labels (\"Mic On\"/\"Mic Off\"), supports disabled/loading states, and triggers onToggle/onRetry callbacks without touching shadcn UI source files."
-        },
-        {
-          "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Wire the mic toggle into the live broadcaster UI (visible while LIVE): default micEnabled=true when the session transitions to live; toggling OFF disables/removes the active audio track from the outgoing stream immediately; toggling ON re-enables or re-acquires mic as needed and re-attaches the audio track. Keep the video stream and camera preview uninterrupted. Use the selected \"camera\" component via the read-only useCamera hook for video capture; Verify the component's usage instructions before implementing."
+          "description": "Ensure mic toggle UI reflects the effective state of audio delivery (enabled/disabled on the outgoing stream) and shows clear English error/disabled states when microphone capture is unavailable during a live broadcast."
         }
       ]
     },
     {
-      "id": "REQ-35",
-      "summary": "Add microphone-specific permission/availability error handling and guidance on the broadcaster side while allowing camera-only operation.",
+      "id": "REQ-38",
+      "summary": "Move subtitle generation to the broadcaster and deliver captions to viewers without requesting viewer microphone; show clear unavailability messaging when SpeechRecognition is unsupported/errors.",
       "acceptanceCriteria": [
-        "If the user blocks microphone permission, the broadcaster UI shows a clear microphone-specific error state and guidance.",
-        "If the device has no microphone or the browser cannot capture audio, the broadcaster UI shows an unsupported/unavailable message for mic capture.",
-        "Camera-only operation remains possible even when mic capture is unavailable (video preview continues)."
+        "Enabling subtitles on the Viewer Watch page does not request or use the viewer’s microphone.",
+        "When subtitles are enabled on the viewer side and the broadcaster is speaking, viewers see captions that track the broadcaster’s speech.",
+        "If the broadcaster’s browser does not support SpeechRecognition (or it errors), show a clear English message to the broadcaster and viewers that broadcaster subtitles are unavailable (while video/audio can continue)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
-          "operation": "create",
-          "description": "Create a microphone-specific permissions/help component that displays clear English messaging for mic permission blocked/denied, no mic found, and not supported/unavailable, and includes a retry action for re-requesting mic access."
-        },
-        {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Display mic-specific status and guidance in the LIVE broadcaster view: when mic capture fails, show MicrophonePermissionsHelp and indicate that audio is not being sent while keeping video preview and broadcasting active. Ensure the retry action re-attempts mic acquisition without breaking the session. Use the selected \"camera\" component via the read-only useCamera hook for video capture; Verify the component's usage instructions before implementing."
+          "description": "Add broadcaster-side caption capture using the existing useSpeechRecognition hook; when live, start/stop caption publishing based on a broadcaster captions toggle; if SpeechRecognition is unsupported or errors, show a clear English message in the broadcaster UI and publish an explicit 'captions unavailable' status for the session so viewers can display the same message."
+        },
+        {
+          "path": "frontend/src/hooks/useSpeechRecognition.ts",
+          "operation": "modify",
+          "description": "Expose a stable error/status surface (e.g., lastError, isSupported, isListening) suitable for broadcaster UI messaging and for triggering 'captions unavailable' publishing while keeping all user-facing text in English."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query mutations/queries for caption publishing and retrieval using the existing backend actor typing: a mutation to publish caption updates for a session code and a query to fetch the latest caption for a session code (for use by viewer polling)."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Remove viewer-side SpeechRecognition usage entirely so enabling subtitles never requests the viewer microphone; instead, use polling of the latest broadcaster-published caption when the viewer subtitle toggle is enabled, and stop polling immediately when disabled."
+        }
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "summary": "Update Viewer Watch subtitles to poll broadcaster-published captions via React Query and render using the existing in-video caption overlay styling.",
+      "acceptanceCriteria": [
+        "Viewer subtitle toggle controls whether broadcaster captions are fetched/displayed; disabling subtitles stops polling for captions.",
+        "ViewerSubtitlesOverlay continues to show “Subtitles are not supported in this browser” only when subtitles truly cannot be displayed; it must not imply the viewer needs speech recognition to see broadcaster captions.",
+        "Captions render inside the video container at the same overlay position as today and update as new caption text arrives."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
+          "operation": "modify",
+          "description": "Change the overlay to accept broadcaster caption text + a 'captions unavailable' state (from broadcaster) and render them using the existing overlay styling/position; only show “Subtitles are not supported in this browser” when captions truly cannot be displayed (not because viewer SpeechRecognition is absent)."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Implement subtitle polling wiring: when subtitlesEnabled is true, use a React Query polling hook to fetch the latest caption for the session code; pass caption text/unavailable status into ViewerSubtitlesOverlay; ensure disabling subtitles stops polling and clears displayed caption."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a dedicated React Query hook for polling the latest caption (with configurable refetchInterval and enabled flag tied to the viewer subtitles toggle) and ensure it returns timestamp/text for incremental updates and proper UI refresh."
         }
       ]
     }

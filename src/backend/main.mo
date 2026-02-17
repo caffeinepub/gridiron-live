@@ -8,9 +8,9 @@ import Order "mo:core/Order";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
 import Bool "mo:core/Bool";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   type TeamIcon = {
     #dolphin;
@@ -39,6 +39,12 @@ actor {
     #point;
   };
 
+  type Caption = {
+    text : Text;
+    timestamp : Time.Time;
+    sessionCode : Text;
+  };
+
   type FlagEvent = {
     team : Text;
     reason : Text;
@@ -65,6 +71,7 @@ actor {
     events : List.List<Event>;
     scoreboard : Scoreboard;
     teamIconsChosen : Bool;
+    captions : List.List<Caption>;
   };
 
   let sessions = Map.empty<Text, Session>();
@@ -98,6 +105,7 @@ actor {
         team2Role = #none;
       };
       teamIconsChosen = false;
+      captions = List.empty<Caption>();
     };
     sessions.add(sessionCode, newSession);
   };
@@ -125,6 +133,7 @@ actor {
       events = session.events;
       scoreboard = updatedScoreboard;
       teamIconsChosen = true;
+      captions = session.captions;
     };
     sessions.add(sessionCode, updatedSession);
   };
@@ -141,6 +150,7 @@ actor {
       events = session.events;
       scoreboard = session.scoreboard;
       teamIconsChosen = session.teamIconsChosen;
+      captions = session.captions;
     };
     sessions.add(sessionCode, updatedSession);
   };
@@ -207,6 +217,7 @@ actor {
       events = session.events;
       scoreboard = updatedScoreboard;
       teamIconsChosen = session.teamIconsChosen;
+      captions = session.captions;
     };
     sessions.add(sessionCode, updatedSession);
   };
@@ -241,5 +252,33 @@ actor {
     };
 
     session.events.add(newEvent);
+  };
+
+  // New endpoints for captions (subtitles from broadcaster)
+
+  public shared ({ caller }) func addCaption(sessionCode : Text, text : Text) : async () {
+    let session = getSessionOrTrap(sessionCode);
+
+    let caption : Caption = {
+      text;
+      timestamp = Time.now();
+      sessionCode;
+    };
+
+    session.captions.add(caption);
+  };
+
+  public query ({ caller }) func getLatestCaption(sessionCode : Text) : async ?Caption {
+    let session = getSessionOrTrap(sessionCode);
+
+    switch (session.captions.last()) {
+      case (null) { Runtime.trap("No captions found for this session") };
+      case (caption) { caption };
+    };
+  };
+
+  public query ({ caller }) func getAllCaptions(sessionCode : Text) : async [Caption] {
+    let session = getSessionOrTrap(sessionCode);
+    session.captions.toArray();
   };
 };

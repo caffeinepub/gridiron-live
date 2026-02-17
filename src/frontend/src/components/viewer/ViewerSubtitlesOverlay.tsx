@@ -1,29 +1,40 @@
+import { AlertCircle } from 'lucide-react';
+
 interface ViewerSubtitlesOverlayProps {
-  transcript: string;
-  isSupported: boolean;
+  caption: string | null;
   isEnabled: boolean;
+  captionsUnavailable: boolean;
 }
 
-export default function ViewerSubtitlesOverlay({ transcript, isSupported, isEnabled }: ViewerSubtitlesOverlayProps) {
-  if (!isEnabled) return null;
+export default function ViewerSubtitlesOverlay({
+  caption,
+  isEnabled,
+  captionsUnavailable,
+}: ViewerSubtitlesOverlayProps) {
+  if (!isEnabled) {
+    return null;
+  }
 
-  if (!isSupported) {
+  if (captionsUnavailable) {
     return (
-      <div className="absolute bottom-16 left-0 right-0 z-20 flex justify-center px-4">
-        <div className="bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm max-w-2xl">
-          Subtitles are not supported in this browser
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg border border-yellow-500/50">
+        <div className="flex items-center gap-2 text-yellow-400 text-sm">
+          <AlertCircle className="h-4 w-4 flex-shrink-0" />
+          <span>Broadcaster captions are unavailable</span>
         </div>
       </div>
     );
   }
 
-  if (!transcript) return null;
+  if (!caption || caption.trim() === '') {
+    return null;
+  }
 
   return (
-    <div className="absolute bottom-16 left-0 right-0 z-20 flex justify-center px-4">
-      <div className="bg-black/90 backdrop-blur-sm text-white px-6 py-3 rounded-lg text-base sm:text-lg max-w-3xl shadow-2xl">
-        {transcript}
-      </div>
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg">
+      <p className="text-white text-center text-sm md:text-base leading-relaxed">
+        {caption}
+      </p>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 17,
+  "projectStateVersion": 19,
   "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
   "architectural_notes": [
     "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
@@ -17,7 +17,9 @@
   "known_issues": [
     "Previous build attempt failed with: \"AI was unable to complete your request.\"",
     "Flag overlay is not auto-dismissing (currently lasts indefinitely) despite intended 3-second timeout.",
-    "Viewers cannot currently hear broadcaster audio (stream likely missing or not sending microphone audio track reliably)."
+    "Viewers cannot currently hear broadcaster audio (stream likely missing or not sending microphone audio track reliably).",
+    "Viewers see a black screen (video not rendering/received) when broadcaster is live.",
+    "Subtitles are being generated from the viewer’s own microphone instead of the broadcaster’s mic audio."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -276,6 +278,38 @@
         "REQ-35"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-viewer-watch-experience-so-viewers-can-see-the-broadcaster-s-live-camera-video-instead-of-a-black-empty-screen-when-the-session-lifecycle-is-live",
+      "title": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-viewers-reliably-hear-the-broadcaster-during-a-live-session",
+      "title": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-subtitles-so-that-viewer-subtitles-reflect-the-broadcaster-s-speech-broadcaster-microphone-rather-than-the-viewer-s-own-microphone",
+      "title": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-viewer-watch-subtitles-ui-to-consume-broadcaster-published-captions-polling-via-react-query-and-display-them-using-the-existing-in-video-caption-overlay-styling",
+      "title": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -427,6 +461,14 @@
       "id": "AR-30",
       "summary": "Add a broadcaster mic on/off toggle during live streaming (defaults to mic ON at start)",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Add backend support for broadcaster-sourced caption delivery so viewers can fetch the latest caption text for a given session code (no third-party services).",
+      "reqIds": [
+        "REQ-39"
+      ],
       "status": "pending"
     }
   ],

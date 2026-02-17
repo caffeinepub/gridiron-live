@@ -1,88 +1,118 @@
 {
   "kind": "build_request",
-  "title": "Fix broadcaster audio and add mic toggle (default ON)",
+  "title": "Fix viewer black screen, broadcaster audio delivery, and broadcaster-sourced subtitles",
   "projectName": "VillanSpoon Live",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-33",
-      "text": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
+      "id": "REQ-36",
+      "text": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "1 yes 2 yes 3yes"
+          "1 black screen"
         ]
       },
       "acceptanceCriteria": [
-        "When a broadcast is live and the broadcaster has granted microphone permission, viewers hear the broadcaster audio while watching the stream.",
-        "The broadcaster stream includes an audio track (not video-only) when mic is enabled.",
-        "If microphone permission is denied/unavailable, the UI clearly indicates that audio is not being sent and provides a retry path without breaking the video stream."
+        "When a session is live, the Viewer Watch page renders a real video element (not just status text) and attempts to play the incoming stream.",
+        "If the incoming stream is not available/negotiation fails, show a clear in-player error state (English) instead of a silent black screen.",
+        "Overlays (latest event, flag overlay, scoreboard, subtitles) remain rendered within the video container and do not break video playback."
       ]
     },
     {
-      "id": "REQ-34",
-      "text": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
+      "id": "REQ-37",
+      "text": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-6"
         ],
         "quotes": [
-          "1 yes 2 yes 3yes"
+          "3 yes and i have it on just viewers cant hear"
         ]
       },
       "acceptanceCriteria": [
-        "A mic toggle is visible on the Broadcaster live view while streaming (not just during pre-live setup).",
-        "Mic defaults to ON at the start of a broadcast.",
-        "Toggling mic OFF stops sending microphone audio to viewers without ending the broadcast or stopping video.",
-        "Toggling mic back ON resumes sending microphone audio to viewers (without requiring restarting the whole session, unless the browser requires re-permission/re-acquire—in that case show a clear instruction and a retry action).",
-        "The toggle label/state uses English user-facing text (e.g., \"Mic On\" / \"Mic Off\")."
+        "During a live session with mic ON, the outgoing stream used for broadcasting includes an enabled audio track derived from the broadcaster microphone capture.",
+        "A newly joined viewer can hear audio without needing the broadcaster to restart the session.",
+        "Toggling the broadcaster mic OFF stops sending microphone audio to viewers; toggling back ON restores viewer audio without restarting the entire broadcast."
       ]
     },
     {
-      "id": "REQ-35",
-      "text": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
-      "target": "frontend",
+      "id": "REQ-38",
+      "text": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-5",
+          "msg-6"
         ],
         "quotes": [
-          "1 yes 2 yes 3yes"
+          "the subtitles only work for them and not whats coming from my mic",
+          "2 brodcaster"
         ]
       },
       "acceptanceCriteria": [
-        "If the user blocks microphone permission, the broadcaster UI shows a clear microphone-specific error state and guidance.",
-        "If the device has no microphone or the browser cannot capture audio, the broadcaster UI shows an unsupported/unavailable message for mic capture.",
-        "Camera-only operation remains possible even when mic capture is unavailable (video preview continues)."
+        "Enabling subtitles on the Viewer Watch page does not request or use the viewer’s microphone.",
+        "When subtitles are enabled on the viewer side and the broadcaster is speaking, viewers see captions that track the broadcaster’s speech.",
+        "If the broadcaster’s browser does not support SpeechRecognition (or it errors), show a clear English message to the broadcaster and viewers that broadcaster subtitles are unavailable (while video/audio can continue)."
+      ]
+    },
+    {
+      "id": "REQ-39",
+      "text": "Add backend support for broadcaster-sourced caption delivery so viewers can fetch the latest caption text for a given session code (no third-party services).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-5",
+          "msg-6"
+        ],
+        "quotes": [
+          "the subtitles only work for them and not whats coming from my mic",
+          "2 brodcaster"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes a canister method for the broadcaster to publish caption updates for a session code.",
+        "Backend exposes a canister query method for viewers to retrieve the most recent caption (and timestamp) for a session code.",
+        "Caption publishing is rejected if the session code does not exist or the session has ended, with a clear trapped error message (English)."
+      ]
+    },
+    {
+      "id": "REQ-40",
+      "text": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-5",
+          "msg-6"
+        ],
+        "quotes": [
+          "the subtitles only work for them and not whats coming from my mic",
+          "2 brodcaster"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Viewer subtitle toggle controls whether broadcaster captions are fetched/displayed; disabling subtitles stops polling for captions.",
+        "ViewerSubtitlesOverlay continues to show “Subtitles are not supported in this browser” only when subtitles truly cannot be displayed; it must not imply the viewer needs speech recognition to see broadcaster captions.",
+        "Captions render inside the video container at the same overlay position as today and update as new caption text arrives."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (Shadcn UI components are read-only).",
-    "Do not edit files listed in frontend.immutablePaths (compose around them instead).",
-    "Backend must remain single-actor Motoko; only add backend changes if strictly required for audio delivery."
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if a state upgrade is actually required.",
+    "Do not modify any files under frontend/src/components/ui or any paths listed in frontend.immutablePaths.",
+    "Use English for all user-facing UI/error text."
   ],
   "nonGoals": [
-    "Implementing third-party audio processing, noise suppression services, or external streaming providers.",
-    "Adding multi-party voice chat or viewer-to-broadcaster audio.",
-    "Adding recording or saving audio/video to backend storage."
+    "Do not add third-party streaming providers or external speech-to-text services.",
+    "Do not add third-party authentication (only Internet Identity is allowed).",
+    "Do not implement real-time WebSocket-based caption delivery; use existing request/response + polling patterns (React Query)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

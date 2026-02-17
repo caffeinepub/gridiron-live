@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { useGetSessionMetadata, useGetEvents, useGetScoreboard, useGetFlagEvents } from '../hooks/useQueries';
+import { useGetSessionMetadata, useGetEvents, useGetScoreboard, useGetFlagEvents, useGetLatestCaption } from '../hooks/useQueries';
 import { useSessionLifecycle } from '../hooks/useSessionLifecycle';
 import { useTimedFlagOverlay } from '../hooks/useTimedFlagOverlay';
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import ViewerVideoPlayer from '../components/viewer/ViewerVideoPlayer';
 import EventFeed from '../components/events/EventFeed';
 import LatestEventOverlay from '../components/events/LatestEventOverlay';
@@ -28,38 +27,28 @@ export default function ViewerWatchPage() {
   const flagEvents = useGetFlagEvents(sessionCode);
   const lifecycleState = useSessionLifecycle(metadata, metadataLoading);
 
+  // Poll for broadcaster captions when subtitles are enabled
+  const { data: latestCaption } = useGetLatestCaption(sessionCode, subtitlesEnabled);
+
   const activeFlagOverlay = useTimedFlagOverlay({
     sessionCode,
     flagEvents,
     displayDuration: 3000,
   });
 
-  const {
-    isSupported: speechSupported,
-    isListening,
-    transcript,
-    startListening,
-    stopListening,
-  } = useSpeechRecognition();
-
   const handleSubtitlesToggle = (enabled: boolean) => {
     setSubtitlesEnabled(enabled);
-    if (enabled && !isListening) {
-      startListening();
-    } else if (!enabled && isListening) {
-      stopListening();
-    }
   };
 
   const handleLeave = () => {
-    if (isListening) {
-      stopListening();
-    }
     clearSessionCode();
     navigate({ to: '/' });
   };
 
   const latestEvent = events.length > 0 ? events[events.length - 1] : null;
+
+  // Determine if captions are unavailable (could be extended with backend status)
+  const captionsUnavailable = false; // TODO: Get from backend if broadcaster reports unavailable
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -96,9 +85,9 @@ export default function ViewerWatchPage() {
             )}
             {scoreboard && <OnCameraScoreboardOverlay scoreboard={scoreboard} />}
             <ViewerSubtitlesOverlay
-              transcript={transcript}
-              isSupported={speechSupported}
+              caption={latestCaption?.text || null}
               isEnabled={subtitlesEnabled}
+              captionsUnavailable={captionsUnavailable}
             />
           </ViewerVideoPlayer>
         </div>

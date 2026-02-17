@@ -10,6 +10,11 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Caption {
+  'sessionCode' : string,
+  'text' : string,
+  'timestamp' : Time,
+}
 export interface Event {
   'flagEvent' : [] | [FlagEvent],
   'description' : string,
@@ -40,10 +45,13 @@ export type TeamRole = { 'none' : null } |
   { 'offense' : null };
 export type Time = bigint;
 export interface _SERVICE {
+  'addCaption' : ActorMethod<[string, string], undefined>,
   'addEvent' : ActorMethod<[string, string, EventType], undefined>,
   'addFlagEvent' : ActorMethod<[string, string, string], undefined>,
   'endSession' : ActorMethod<[string], undefined>,
+  'getAllCaptions' : ActorMethod<[string], Array<Caption>>,
   'getEvents' : ActorMethod<[string], Array<Event>>,
+  'getLatestCaption' : ActorMethod<[string], [] | [Caption]>,
   'getScoreboard' : ActorMethod<[string], Scoreboard>,
   'getSessionMetadata' : ActorMethod<[string], [string, Time, [] | [Time]]>,
   'isValidSessionCode' : ActorMethod<[string], boolean>,

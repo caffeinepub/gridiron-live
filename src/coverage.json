@@ -1,65 +1,107 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T22:08:49.176Z",
+  "generatedAt": "2026-02-17T22:24:18.118Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 5,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-33",
-        "summary": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
+        "id": "REQ-36",
+        "summary": "Fix the Viewer Watch experience so viewers can see the broadcaster’s live camera video instead of a black/empty screen when the session lifecycle is live.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useMicrophone.ts",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/hooks/useViewerLiveStream.ts"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useMicrophone.ts",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/hooks/useViewerLiveStream.ts"
         ]
       },
       {
-        "id": "REQ-34",
-        "summary": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
+        "id": "REQ-37",
+        "summary": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, viewers reliably hear the broadcaster during a live session.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/hooks/useBroadcastMediaStream.ts",
+          "frontend/src/components/broadcast/BroadcasterMicToggle.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/hooks/useBroadcastMediaStream.ts",
+          "frontend/src/components/broadcast/BroadcasterMicToggle.tsx"
         ]
       },
       {
-        "id": "REQ-35",
-        "summary": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
+        "id": "REQ-38",
+        "summary": "Change subtitles so that viewer subtitles reflect the broadcaster’s speech (broadcaster microphone) rather than the viewer’s own microphone.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/hooks/useSpeechRecognition.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ViewerWatchPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/hooks/useSpeechRecognition.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/ViewerWatchPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-39",
+        "summary": "Add backend support for broadcaster-sourced caption delivery so viewers can fetch the latest caption text for a given session code (no third-party services).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-40",
+        "summary": "Update the Viewer Watch subtitles UI to consume broadcaster-published captions (polling via React Query) and display them using the existing in-video caption overlay styling.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
     "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
-    "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
-    "frontend/src/hooks/useMicrophone.ts",
+    "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
+    "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useBroadcastMediaStream.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useSpeechRecognition.ts",
+    "frontend/src/hooks/useViewerLiveStream.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
+    "frontend/src/pages/ViewerJoinPage.tsx",
+    "frontend/src/pages/ViewerWatchPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

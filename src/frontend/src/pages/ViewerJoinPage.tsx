@@ -1,35 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from '@tanstack/react-router';
-import { useValidateSessionCode } from '../hooks/useQueries';
+import { useIsValidSessionCode } from '../hooks/useQueries';
 import { useSessionCode } from '../hooks/useSessionCode';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ViewerJoinPage() {
   const [inputCode, setInputCode] = useState('');
-  const [attemptedCode, setAttemptedCode] = useState<string | undefined>(undefined);
+  const [validationResult, setValidationResult] = useState<boolean | null>(null);
   const { setSessionCode } = useSessionCode();
   const navigate = useNavigate();
 
-  const { data: isValid, isLoading } = useValidateSessionCode(attemptedCode);
+  const validateMutation = useIsValidSessionCode();
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     const code = inputCode.trim().toUpperCase();
     if (code.length === 6) {
-      setAttemptedCode(code);
+      try {
+        const isValid = await validateMutation.mutateAsync(code);
+        setValidationResult(isValid);
+        if (isValid) {
+          setSessionCode(code);
+          navigate({ to: '/watch/$sessionCode', params: { sessionCode: code } });
+        }
+      } catch (error) {
+        setValidationResult(false);
+      }
     }
   };
 
-  if (attemptedCode && isValid === true) {
-    setSessionCode(attemptedCode);
-    navigate({ to: '/watch/$sessionCode', params: { sessionCode: attemptedCode } });
-  }
-
-  const showError = attemptedCode && isValid === false && !isLoading;
+  const showError = validationResult === false && !validateMutation.isPending;
 
   return (
     <div className="container mx-auto px-4 py-12 flex items-center justify-center min-h-[80vh]">
@@ -49,7 +53,7 @@ export default function ViewerJoinPage() {
               value={inputCode}
               onChange={(e) => {
                 setInputCode(e.target.value.toUpperCase());
-                setAttemptedCode(undefined);
+                setValidationResult(null);
               }}
               maxLength={6}
               className="text-2xl text-center scoreboard-text tracking-widest"
@@ -74,9 +78,9 @@ export default function ViewerJoinPage() {
             size="lg"
             className="w-full"
             onClick={handleJoin}
-            disabled={inputCode.length !== 6 || isLoading}
+            disabled={inputCode.length !== 6 || validateMutation.isPending}
           >
-            {isLoading ? (
+            {validateMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Validating...

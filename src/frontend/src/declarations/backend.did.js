@@ -10,6 +10,11 @@ import { IDL } from '@icp-sdk/core/candid';
 
 export const EventType = IDL.Variant({ 'flag' : IDL.Null, 'point' : IDL.Null });
 export const Time = IDL.Int;
+export const Caption = IDL.Record({
+  'sessionCode' : IDL.Text,
+  'text' : IDL.Text,
+  'timestamp' : Time,
+});
 export const FlagEvent = IDL.Record({
   'team' : IDL.Text,
   'timestamp' : Time,
@@ -42,10 +47,13 @@ export const Scoreboard = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  'addCaption' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'addEvent' : IDL.Func([IDL.Text, IDL.Text, EventType], [], []),
   'addFlagEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'endSession' : IDL.Func([IDL.Text], [], []),
+  'getAllCaptions' : IDL.Func([IDL.Text], [IDL.Vec(Caption)], ['query']),
   'getEvents' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
+  'getLatestCaption' : IDL.Func([IDL.Text], [IDL.Opt(Caption)], ['query']),
   'getScoreboard' : IDL.Func([IDL.Text], [Scoreboard], ['query']),
   'getSessionMetadata' : IDL.Func(
       [IDL.Text],
@@ -67,6 +75,11 @@ export const idlInitArgs = [];
 export const idlFactory = ({ IDL }) => {
   const EventType = IDL.Variant({ 'flag' : IDL.Null, 'point' : IDL.Null });
   const Time = IDL.Int;
+  const Caption = IDL.Record({
+    'sessionCode' : IDL.Text,
+    'text' : IDL.Text,
+    'timestamp' : Time,
+  });
   const FlagEvent = IDL.Record({
     'team' : IDL.Text,
     'timestamp' : Time,
@@ -99,10 +112,13 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    'addCaption' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'addEvent' : IDL.Func([IDL.Text, IDL.Text, EventType], [], []),
     'addFlagEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'endSession' : IDL.Func([IDL.Text], [], []),
+    'getAllCaptions' : IDL.Func([IDL.Text], [IDL.Vec(Caption)], ['query']),
     'getEvents' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
+    'getLatestCaption' : IDL.Func([IDL.Text], [IDL.Opt(Caption)], ['query']),
     'getScoreboard' : IDL.Func([IDL.Text], [Scoreboard], ['query']),
     'getSessionMetadata' : IDL.Func(
         [IDL.Text],
