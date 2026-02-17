@@ -2,31 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-current-placeholder-viewer-live-stream-implementation-so-that-viewers-can-actually-connect-to-and-play-the-broadcaster-s-live-stream-when-a-session-is-in-the-live-lifecycle-state-no-forced-stream-unavailable-simulation",
-      "featureTitle": "Replace the current placeholder viewer live-stream implementation so that viewers can actually connect to and play the broadcaster’s live stream when a session is in the \"live\" lifecycle state (no forced \"Stream Unavailable\" simulation).",
+      "featureId": "feature-fix-the-broadcaster-live-ui-so-it-correctly-recognizes-that-team-a-and-team-b-were-selected-during-the-pre-live-setup-and-does-not-continue-showing-messaging-that-teams-must-be-selected-after-the-broadcast-starts",
+      "featureTitle": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
       "files": [
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-        "frontend/src/hooks/useViewerLiveStream.ts"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-41"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-broadcaster-to-viewer-streaming-pipeline-is-fully-implemented-end-to-end-including-session-scoped-signaling-state-in-the-motoko-backend-if-required-so-that-a-viewer-joining-with-a-valid-session-code-can-establish-a-working-in-browser-real-time-connection-to-the-broadcaster-video-audio",
-      "featureTitle": "Ensure the broadcaster-to-viewer streaming pipeline is fully implemented end-to-end, including session-scoped signaling/state in the Motoko backend if required, so that a viewer joining with a valid session code can establish a working in-browser real-time connection to the broadcaster (video + audio).",
-      "files": [
-        "frontend/src/hooks/useBroadcastMediaStream.ts",
-        "frontend/src/hooks/useViewerLiveStream.ts",
+        "frontend/src/components/broadcast/FootballControlPanel.tsx",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -38,16 +17,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-42"
+        "REQ-45"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-fix-broadcaster-to-viewer-audio-so-that-when-the-broadcaster-mic-toggle-is-on-the-outgoing-stream-includes-an-enabled-audio-track-and-viewers-can-reliably-hear-the-broadcaster-during-a-live-session",
-      "featureTitle": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, the outgoing stream includes an enabled audio track and viewers can reliably hear the broadcaster during a live session.",
+      "featureId": "feature-ensure-the-broadcaster-game-controls-flag-dialog-receives-the-current-scoreboard-state-from-the-broadcaster-page-so-that-team-selection-readiness-and-team-naming-are-driven-by-backend-scoreboard-data-rather-than-missing-undefined-props",
+      "featureTitle": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
       "files": [
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-        "frontend/src/hooks/useBroadcastMediaStream.ts",
+        "frontend/src/components/broadcast/FootballControlPanel.tsx",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -59,27 +37,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-43"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-move-the-subtitles-captions-overlay-to-the-top-of-the-video-inside-the-video-container-for-both-the-broadcaster-camera-preview-and-the-viewer-watch-view-while-keeping-existing-styling-readable-over-video",
-      "featureTitle": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
-      "files": [
-        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-        "frontend/src/pages/BroadcasterPage.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-44"
+        "REQ-46"
       ],
       "confidence": "high"
     }

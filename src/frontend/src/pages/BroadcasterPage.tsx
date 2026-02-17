@@ -34,7 +34,7 @@ export default function BroadcasterPage() {
   const [captionsEnabled, setCaptionsEnabled] = useState(false);
   const { status, sessionCode, startSession, endSession, isLive, isIdle } = useBroadcasterSession();
   const { data: events = [] } = useGetEvents(sessionCode || undefined);
-  const { data: scoreboard } = useGetScoreboard(sessionCode || undefined);
+  const { data: scoreboard, isLoading: scoreboardLoading } = useGetScoreboard(sessionCode || undefined);
   const flagEvents = useGetFlagEvents(sessionCode || undefined);
 
   const activeFlagOverlay = useTimedFlagOverlay({
@@ -433,7 +433,11 @@ export default function BroadcasterPage() {
               </Card>
 
               <div className="grid md:grid-cols-2 gap-4">
-                <FootballControlPanel sessionCode={sessionCode} disabled={!scoreboard} />
+                <FootballControlPanel 
+                  sessionCode={sessionCode} 
+                  scoreboard={scoreboard}
+                  isLoading={scoreboardLoading}
+                />
                 {scoreboard && (
                   <ScoreboardControls sessionCode={sessionCode} currentScoreboard={scoreboard} />
                 )}

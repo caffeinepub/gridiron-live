@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 21,
+  "projectStateVersion": 23,
   "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
   "architectural_notes": [
     "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
@@ -19,7 +19,8 @@
     "Flag overlay is not auto-dismissing (currently lasts indefinitely) despite intended 3-second timeout.",
     "Viewers cannot currently hear broadcaster audio (stream likely missing or not sending microphone audio track reliably).",
     "Viewers see a black screen (video not rendering/received) when broadcaster is live.",
-    "Subtitles are being generated from the viewer’s own microphone instead of the broadcaster’s mic audio."
+    "Subtitles are being generated from the viewer’s own microphone instead of the broadcaster’s mic audio.",
+    "Broadcaster pre-live team selection is not being recognized at stream start (shows \"need to select teams\" error even after selecting both teams)."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -340,6 +341,22 @@
       "title": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
       "reqIds": [
         "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-broadcaster-live-ui-so-it-correctly-recognizes-that-team-a-and-team-b-were-selected-during-the-pre-live-setup-and-does-not-continue-showing-messaging-that-teams-must-be-selected-after-the-broadcast-starts",
+      "title": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-broadcaster-game-controls-flag-dialog-receives-the-current-scoreboard-state-from-the-broadcaster-page-so-that-team-selection-readiness-and-team-naming-are-driven-by-backend-scoreboard-data-rather-than-missing-undefined-props",
+      "title": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
+      "reqIds": [
+        "REQ-46"
       ],
       "version": 1
     }

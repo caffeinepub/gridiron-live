@@ -11,11 +11,11 @@ import type { Scoreboard } from '../../backend';
 
 interface FootballControlPanelProps {
   sessionCode: string;
-  disabled?: boolean;
   scoreboard?: Scoreboard;
+  isLoading?: boolean;
 }
 
-export default function FootballControlPanel({ sessionCode, disabled, scoreboard }: FootballControlPanelProps) {
+export default function FootballControlPanel({ sessionCode, scoreboard, isLoading }: FootballControlPanelProps) {
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | ''>('');
   const [flagReason, setFlagReason] = useState('');
@@ -49,7 +49,7 @@ export default function FootballControlPanel({ sessionCode, disabled, scoreboard
 
   const isProcessing = addFlagMutation.isPending;
   const canSubmit = selectedTeam && flagReason.trim() && !isProcessing && scoreboard;
-  const isBlocked = !scoreboard;
+  const isDisabled = isLoading || !scoreboard || isProcessing;
 
   return (
     <>
@@ -63,19 +63,28 @@ export default function FootballControlPanel({ sessionCode, disabled, scoreboard
             variant="destructive"
             className="w-full h-32 flex flex-col gap-3 text-lg"
             onClick={handleFlagClick}
-            disabled={disabled || isProcessing || isBlocked}
-            title={isBlocked ? 'Please select team icons before adding flags' : undefined}
+            disabled={isDisabled}
+            title={isLoading ? 'Loading scoreboard...' : !scoreboard ? 'Initializing...' : undefined}
           >
-            <img
-              src="/assets/generated/icon-flag.dim_256x256.png"
-              alt="Flag"
-              className="h-16 w-16 object-contain"
-            />
-            <span className="scoreboard-text">Flag</span>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-16 w-16 animate-spin" />
+                <span className="scoreboard-text text-sm">Loading...</span>
+              </>
+            ) : (
+              <>
+                <img
+                  src="/assets/generated/icon-flag.dim_256x256.png"
+                  alt="Flag"
+                  className="h-16 w-16 object-contain"
+                />
+                <span className="scoreboard-text">Flag</span>
+              </>
+            )}
           </Button>
-          {isBlocked && (
+          {isLoading && (
             <p className="text-sm text-muted-foreground mt-2 text-center">
-              Select team icons to enable flags
+              Initializing game controls...
             </p>
           )}
         </CardContent>

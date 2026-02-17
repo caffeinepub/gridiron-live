@@ -1,105 +1,47 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "VillanSpoon Live: real viewer playback (WebRTC) + captions moved to top",
+  "title": "Broadcaster live UI: recognize pre-live team selection and fix Flag/Game Controls readiness",
   "requirements": [
     {
-      "id": "REQ-41",
-      "summary": "Remove simulated viewer failure and implement real viewer live-stream connection + retry without page reload.",
+      "id": "REQ-45",
+      "summary": "Ensure the broadcaster live page uses fetched scoreboard state (with team icons) to clear any post-start 'select teams' messaging and enable Game Controls once available.",
       "acceptanceCriteria": [
-        "When the broadcaster is live, the Viewer Watch page renders the broadcaster’s actual camera video instead of always showing the \"Stream Unavailable\" overlay.",
-        "The viewer connection logic no longer unconditionally sets an error after a timeout (remove the simulated failure path in the live connection flow).",
-        "Retry Connection triggers a real reconnection attempt and can recover from a transient disconnect without reloading the page."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useViewerLiveStream.ts",
-          "operation": "modify",
-          "description": "Replace the current simulated timeout/error logic with real in-browser connection management (WebRTC peer connection lifecycle, attach remote MediaStream to the provided videoRef, track connecting/connected/error states, and implement a true retry() that tears down and re-establishes negotiation)."
-        },
-        {
-          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-          "operation": "modify",
-          "description": "Adjust the live-state UI to reflect real connection state (connecting vs connected vs error) driven by the updated useViewerLiveStream hook; keep the existing Retry Connection button wired to the hook retry() for an actual reconnection attempt."
-        }
-      ]
-    },
-    {
-      "id": "REQ-42",
-      "summary": "Implement the frontend portion of an end-to-end broadcaster-to-viewer WebRTC pipeline using backend-assisted, session-code-scoped signaling/state.",
-      "acceptanceCriteria": [
-        "A viewer joining a live session by session code can establish a successful connection and see live video within the Viewer Watch video element.",
-        "A viewer joining after the broadcaster is already live can still connect and see the current live video (late join works).",
-        "The backend exposes whatever session-code-scoped signaling/state endpoints are needed for the chosen in-browser real-time protocol, and the frontend uses them to complete negotiation.",
-        "No third-party streaming providers are introduced."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useViewerLiveStream.ts",
-          "operation": "modify",
-          "description": "Implement viewer-side WebRTC negotiation using sessionCode-scoped backend-assisted signaling/state (poll/subscribe for offers/answers/ICE as provided by backend capabilities), including robust cleanup on unmount/session change and late-join support."
-        },
-        {
-          "path": "frontend/src/pages/BroadcasterPage.tsx",
-          "operation": "modify",
-          "description": "Integrate broadcaster-side WebRTC publishing lifecycle during the live state (create/maintain a peer connection per viewer or via a session-scoped fanout strategy supported by backend signaling/state; ensure camera preview remains intact). Use the selected \"camera\" component hook already in this file for camera capture; verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useBroadcastMediaStream.ts",
-          "operation": "modify",
-          "description": "Harden the combined broadcast MediaStream composition so it can be reliably used as the outgoing stream for WebRTC publishing (stable track handling, predictable audio track enable/disable behavior, and avoiding unnecessary track churn during mic toggles)."
-        },
-        {
-          "path": "frontend/src/pages/ViewerWatchPage.tsx",
-          "operation": "modify",
-          "description": "Ensure Viewer Watch only attempts to connect when lifecycleState is \"live\" and sessionCode is valid; keep the existing routing and page structure, but wire any required viewer-gesture prompts (if needed for autoplay/audio) within the existing page layout."
-        }
-      ]
-    },
-    {
-      "id": "REQ-43",
-      "summary": "Ensure broadcaster mic toggling correctly controls outgoing audio track and viewer playback is configured for audible, mobile-compatible audio.",
-      "acceptanceCriteria": [
-        "With mic enabled on the broadcaster page, viewers hear the broadcaster audio during a live session.",
-        "Toggling the broadcaster mic OFF stops audio for viewers; toggling it back ON restores audio without requiring a page refresh.",
-        "The viewer video element is configured to play audio (not muted) and remains compatible with mobile autoplay constraints (e.g., playsInline)."
+        "After selecting Team A and Team B on the broadcaster start screen and starting the broadcast, the broadcaster live page does not show any persistent message/tooltip indicating teams still need to be selected.",
+        "The Game Controls panel (Flag) is enabled once the scoreboard data is available, and the UI uses the current team names derived from the selected team icons (Titans/Twisters/Bullfrogs/Dolphins) instead of generic Team A/Team B.",
+        "If scoreboard data is still loading right after the session starts, any temporary disabled/loading state clears automatically once the scoreboard query resolves (no manual refresh required)."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Update mic toggle behavior to control the outgoing audio track used for streaming (ensure the published stream’s audio track is present when micEnabled is ON and disabled/removed when OFF, with seamless restore on re-enable), while keeping local preview behavior consistent."
+          "description": "Pass the fetched scoreboard into the Game Controls panel and drive the panel disabled/loading state from the scoreboard query state (instead of treating missing props as 'teams not selected'). Ensure the UI transitions automatically from temporary 'loading/disabled' to enabled once the scoreboard query resolves."
         },
         {
-          "path": "frontend/src/hooks/useBroadcastMediaStream.ts",
+          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
           "operation": "modify",
-          "description": "Ensure micEnabled toggles are applied to the actual audio track used for the outgoing stream (track.enabled semantics) and that adding/removing tracks is done in a way that supports renegotiation requirements of the chosen WebRTC flow."
-        },
-        {
-          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-          "operation": "modify",
-          "description": "Confirm the viewer video element remains unmuted and playsInline, and add a minimal in-UI fallback for mobile autoplay restrictions (e.g., a user-gesture 'Tap to unmute/play' control) that triggers video.play() when required without reloading."
+          "description": "Update the Flag button tooltip/helper text so that when scoreboard is temporarily unavailable right after going live it indicates a loading/initializing state (not 'select team icons'), and ensure the message disappears as soon as scoreboard data is present."
         }
       ]
     },
     {
-      "id": "REQ-44",
-      "summary": "Move subtitles/captions overlay to the top of the video container on broadcaster preview and viewer watch, without covering the bottom scoreboard.",
+      "id": "REQ-46",
+      "summary": "Wire current scoreboard state into the Flag dialog so team labels and readiness are driven by actual scoreboard data and not undefined/omitted props.",
       "acceptanceCriteria": [
-        "On the Viewer Watch page, enabled subtitles render near the top of the video container (not the bottom).",
-        "On the Broadcaster page camera preview, the live transcript/caption overlay renders near the top of the video container (not the bottom).",
-        "Caption overlays do not overlap the on-camera bottom scoreboard overlay (scoreboard remains unobstructed)."
+        "When broadcasting is live, opening the Flag dialog shows the two team buttons labeled with the mapped names from the current scoreboard icons (not generic placeholders).",
+        "The Flag button is not permanently blocked solely due to the scoreboard prop being omitted; the blocked/disabled logic reflects the actual presence of fetched scoreboard data.",
+        "Submitting a flag event works immediately after going live (once scoreboard is loaded), without requiring re-selecting teams."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-          "operation": "modify",
-          "description": "Reposition the viewer caption overlay from bottom placement to top placement within the video container; keep current readability styling (background blur, contrast) and ensure it does not interfere with the bottom scoreboard overlay."
-        },
-        {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Move the broadcaster transcript overlay from bottom placement to top placement inside the camera preview container; preserve readability and ensure the bottom OnCameraScoreboardOverlay remains unobstructed. Use the selected \"camera\" component hook already in this file for camera preview; verify the component's usage instructions before implementing."
+          "description": "Ensure FootballControlPanel receives a non-undefined scoreboard prop sourced from the live scoreboard query, so the Flag dialog has access to current icon-based team identity as soon as the query returns."
+        },
+        {
+          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "operation": "modify",
+          "description": "Make Flag dialog team button labels strictly derived from the provided scoreboard icons via existing team icon mapping, and align disabled/blocked logic to reflect actual scoreboard presence (avoid treating missing props as a permanent 'teams not selected' state)."
         }
       ]
     }

@@ -1,70 +1,39 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T22:44:14.326Z",
+  "generatedAt": "2026-02-17T23:02:04.689Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-41",
-        "summary": "Replace the current placeholder viewer live-stream implementation so that viewers can actually connect to and play the broadcaster’s live stream when a session is in the \"live\" lifecycle state (no forced \"Stream Unavailable\" simulation).",
+        "id": "REQ-45",
+        "summary": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useViewerLiveStream.ts",
-          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useViewerLiveStream.ts",
-          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
         ]
       },
       {
-        "id": "REQ-42",
-        "summary": "Ensure the broadcaster-to-viewer streaming pipeline is fully implemented end-to-end, including session-scoped signaling/state in the Motoko backend if required, so that a viewer joining with a valid session code can establish a working in-browser real-time connection to the broadcaster (video + audio).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useViewerLiveStream.ts",
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcastMediaStream.ts",
-          "frontend/src/pages/ViewerWatchPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useViewerLiveStream.ts",
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcastMediaStream.ts"
-        ]
-      },
-      {
-        "id": "REQ-43",
-        "summary": "Fix broadcaster-to-viewer audio so that when the broadcaster mic toggle is ON, the outgoing stream includes an enabled audio track and viewers can reliably hear the broadcaster during a live session.",
+        "id": "REQ-46",
+        "summary": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcastMediaStream.ts",
-          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
         ],
         "matchedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcastMediaStream.ts",
-          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
-        ]
-      },
-      {
-        "id": "REQ-44",
-        "summary": "Move the subtitles/captions overlay to the top of the video (inside the video container) for BOTH the broadcaster camera preview and the viewer watch view, while keeping existing styling readable over video.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
         ]
       }
     ]
@@ -74,10 +43,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-    "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-    "frontend/src/hooks/useBroadcastMediaStream.ts",
-    "frontend/src/hooks/useViewerLiveStream.ts",
+    "frontend/src/components/broadcast/FootballControlPanel.tsx",
     "frontend/src/pages/BroadcasterPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

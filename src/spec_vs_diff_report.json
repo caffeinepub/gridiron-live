@@ -1,60 +1,38 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T22:44:14.322Z",
-  "summary": "REQ-44 (move subtitles overlay to top) appears implemented for viewer via absolute positioning at top. However, REQ-41/REQ-42 (real viewer playback with no simulated failure; end-to-end signaling/state) are not implemented: the viewer WebRTC hook still contains TODO signaling and explicitly sets an error that signaling is not implemented, so viewers will not receive the broadcaster stream. REQ-43 (reliable audio end-to-end) is only partially addressed on broadcaster side by managing audio track enable/disable, but cannot be satisfied without the missing end-to-end viewer connection/signaling and explicit viewer audio playback configuration in the video element.",
-  "missing_requirements": [
-    {
-      "id": "REQ-41",
-      "requirement": "Replace the placeholder viewer live-stream implementation so viewers can actually connect to and play the broadcaster’s live stream when the session is live; remove the simulated failure path; Retry Connection performs a real reconnection attempt.",
-      "reason": "The viewer hook still does not negotiate a connection and explicitly sets an error stating signaling is not implemented after a timeout; this prevents actual playback and is effectively a forced failure path. While a retry function exists in UI, the underlying connection flow does not complete without signaling.",
-      "evidence": [
-        "frontend/src/hooks/useViewerLiveStream.ts",
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
-      ]
-    },
-    {
-      "id": "REQ-42",
-      "requirement": "Implement the broadcaster-to-viewer streaming pipeline end-to-end including session-code-scoped backend signaling/state endpoints as needed so a viewer joining by code (including late join) can establish working in-browser real-time video+audio.",
-      "reason": "No backend signaling/state endpoints are shown in the diff, and the viewer WebRTC hook includes TODOs for sending offers/answers/ICE candidates and then errors out indicating backend signaling is not implemented, so end-to-end negotiation cannot succeed (including late join).",
-      "evidence": [
-        "frontend/src/hooks/useViewerLiveStream.ts"
-      ]
-    },
-    {
-      "id": "REQ-43",
-      "requirement": "Fix broadcaster-to-viewer audio so mic ON sends enabled audio track; mic OFF stops audio; mic ON restores without refresh; viewer video element plays audio (not muted) and works with mobile autoplay constraints.",
-      "reason": "Broadcaster-side audio track enabling/disabling is implemented in a new hook, but viewer audio cannot be verified/achieved because the viewer connection pipeline is not implemented and the viewer video element shown does not explicitly configure audio playback (e.g., no explicit unmute/volume handling) beyond lacking a muted attribute.",
-      "evidence": [
-        "frontend/src/hooks/useBroadcastMediaStream.ts",
-        "frontend/src/hooks/useViewerLiveStream.ts",
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-17T23:02:04.686Z",
+  "summary": "Diff updates broadcaster live UI to pass fetched scoreboard state into Game Controls and to derive team names from scoreboard icons, with loading/disabled behavior tied to scoreboard query state. However, the diff summary also indicates several unrelated broadcaster enhancements beyond the requested UI bug fix scope.",
+  "missing_requirements": [],
   "hallucinated_features": [
     {
-      "description": "Adds a WebRTC viewer connection attempt that uses Google STUN servers and then surfaces an explicit 'signaling not yet implemented' error message.",
-      "reason": "The BuildRequest requires implementing real live playback and signaling/state; adding a non-functional placeholder flow with hardcoded STUN servers and an intentional error path is not requested as a deliverable feature.",
+      "description": "Added/modified broadcaster-side caption generation/publishing and caption polling behavior.",
+      "reason": "Not requested by REQ-45/REQ-46; BuildRequest is specifically about post-live team selection recognition and passing scoreboard state into the Flag dialog.",
       "evidence": [
-        "frontend/src/hooks/useViewerLiveStream.ts"
+        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"broadcaster-side speech recognition for caption generation\" and \"caption publishing to backend\" and viewer caption polling)",
+        "frontend/src/pages/BroadcasterPage.tsx (imports/use of useSpeechRecognition, usePublishCaption shown in snippet)"
       ]
     },
     {
-      "description": "Introduces a 'Broadcaster captions are unavailable' warning banner overlay for viewers.",
-      "reason": "REQ-44 only requests moving captions/subtitles overlay position; adding a new unavailable-state banner is extra behavior/UI not explicitly requested.",
+      "description": "WebRTC peer connection preparation / signaling-related scaffolding changes on BroadcasterPage.",
+      "reason": "Not requested; BuildRequest explicitly limits scope to fixing incorrect post-start team selection behavior and does not request streaming/signaling changes.",
       "evidence": [
-        "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx"
+        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"WebRTC peer connection preparation for when backend signaling is available\")",
+        "frontend/src/pages/BroadcasterPage.tsx (shows peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>...)"
+      ]
+    },
+    {
+      "description": "UI changes like moving transcript overlay to the top of video containers and broader mic/audio track management changes.",
+      "reason": "Not requested by REQ-45/REQ-46; these are broader UX/behavior changes beyond the team-selection/scoreboard-prop bug fix.",
+      "evidence": [
+        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"transcript overlay moved to top of video\" and \"stable audio track management\" and \"mic toggle with proper track enable/disable\")"
       ]
     }
   ],
-  "confidence": 0.78,
+  "confidence": 0.66,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/components/viewer/ViewerSubtitlesOverlay.tsx",
-    "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-    "frontend/src/hooks/useBroadcastMediaStream.ts",
-    "frontend/src/hooks/useViewerLiveStream.ts",
+    "frontend/src/components/broadcast/FootballControlPanel.tsx",
     "frontend/src/pages/BroadcasterPage.tsx",
     "project_state.json"
   ]
