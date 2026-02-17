@@ -89,23 +89,25 @@ export class ExternalBlob {
         return this;
     }
 }
+export type Time = bigint;
 export interface Scoreboard {
     team1Score: bigint;
     team2Icon: TeamIcon;
+    team2Role: TeamRole;
     team2Score: bigint;
     team1Icon: TeamIcon;
-}
-export type Time = bigint;
-export interface FlagEvent {
-    team: string;
-    timestamp: Time;
-    reason: string;
+    team1Role: TeamRole;
 }
 export interface Event {
     flagEvent?: FlagEvent;
     description: string;
     timestamp: Time;
     eventType: EventType;
+}
+export interface FlagEvent {
+    team: string;
+    timestamp: Time;
+    reason: string;
 }
 export enum EventType {
     flag = "flag",
@@ -117,20 +119,24 @@ export enum TeamIcon {
     fist = "fist",
     bullfrog = "bullfrog"
 }
+export enum TeamRole {
+    none = "none",
+    defense = "defense",
+    offense = "offense"
+}
 export interface backendInterface {
     addEvent(sessionCode: string, description: string, eventType: EventType): Promise<void>;
     addFlagEvent(sessionCode: string, team: string, reason: string): Promise<void>;
-    clearFlagOverlays(sessionCode: string): Promise<void>;
     endSession(sessionCode: string): Promise<void>;
-    getActiveFlagOverlays(sessionCode: string): Promise<Array<FlagEvent>>;
     getEvents(sessionCode: string): Promise<Array<Event>>;
     getScoreboard(sessionCode: string): Promise<Scoreboard>;
     getSessionMetadata(sessionCode: string): Promise<[string, Time, Time | null]>;
     isValidSessionCode(sessionCode: string): Promise<boolean>;
+    setTeamIcons(sessionCode: string, team1Icon: TeamIcon, team2Icon: TeamIcon): Promise<void>;
     startSession(broadcaster: string, sessionCode: string): Promise<void>;
-    updateScoreboard(sessionCode: string, team1Score: bigint, team2Score: bigint, team1Icon: TeamIcon, team2Icon: TeamIcon): Promise<void>;
+    updateScoreboard(sessionCode: string, team1Score: bigint, team2Score: bigint, team1Role: TeamRole, team2Role: TeamRole): Promise<void>;
 }
-import type { Event as _Event, EventType as _EventType, FlagEvent as _FlagEvent, Scoreboard as _Scoreboard, TeamIcon as _TeamIcon, Time as _Time } from "./declarations/backend.did.d.ts";
+import type { Event as _Event, EventType as _EventType, FlagEvent as _FlagEvent, Scoreboard as _Scoreboard, TeamIcon as _TeamIcon, TeamRole as _TeamRole, Time as _Time } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async addEvent(arg0: string, arg1: string, arg2: EventType): Promise<void> {
@@ -161,20 +167,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async clearFlagOverlays(arg0: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.clearFlagOverlays(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.clearFlagOverlays(arg0);
-            return result;
-        }
-    }
     async endSession(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -186,20 +178,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.endSession(arg0);
-            return result;
-        }
-    }
-    async getActiveFlagOverlays(arg0: string): Promise<Array<FlagEvent>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getActiveFlagOverlays(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getActiveFlagOverlays(arg0);
             return result;
         }
     }
@@ -238,7 +216,7 @@ export class Backend implements backendInterface {
                 return [
                     result[0],
                     result[1],
-                    from_candid_opt_n13(this._uploadFile, this._downloadFile, result[2])
+                    from_candid_opt_n15(this._uploadFile, this._downloadFile, result[2])
                 ];
             } catch (e) {
                 this.processError(e);
@@ -249,7 +227,7 @@ export class Backend implements backendInterface {
             return [
                 result[0],
                 result[1],
-                from_candid_opt_n13(this._uploadFile, this._downloadFile, result[2])
+                from_candid_opt_n15(this._uploadFile, this._downloadFile, result[2])
             ];
         }
     }
@@ -267,6 +245,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setTeamIcons(arg0: string, arg1: TeamIcon, arg2: TeamIcon): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setTeamIcons(arg0, to_candid_TeamIcon_n16(this._uploadFile, this._downloadFile, arg1), to_candid_TeamIcon_n16(this._uploadFile, this._downloadFile, arg2));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setTeamIcons(arg0, to_candid_TeamIcon_n16(this._uploadFile, this._downloadFile, arg1), to_candid_TeamIcon_n16(this._uploadFile, this._downloadFile, arg2));
+            return result;
+        }
+    }
     async startSession(arg0: string, arg1: string): Promise<void> {
         if (this.processError) {
             try {
@@ -281,17 +273,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async updateScoreboard(arg0: string, arg1: bigint, arg2: bigint, arg3: TeamIcon, arg4: TeamIcon): Promise<void> {
+    async updateScoreboard(arg0: string, arg1: bigint, arg2: bigint, arg3: TeamRole, arg4: TeamRole): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateScoreboard(arg0, arg1, arg2, to_candid_TeamIcon_n14(this._uploadFile, this._downloadFile, arg3), to_candid_TeamIcon_n14(this._uploadFile, this._downloadFile, arg4));
+                const result = await this.actor.updateScoreboard(arg0, arg1, arg2, to_candid_TeamRole_n18(this._uploadFile, this._downloadFile, arg3), to_candid_TeamRole_n18(this._uploadFile, this._downloadFile, arg4));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateScoreboard(arg0, arg1, arg2, to_candid_TeamIcon_n14(this._uploadFile, this._downloadFile, arg3), to_candid_TeamIcon_n14(this._uploadFile, this._downloadFile, arg4));
+            const result = await this.actor.updateScoreboard(arg0, arg1, arg2, to_candid_TeamRole_n18(this._uploadFile, this._downloadFile, arg3), to_candid_TeamRole_n18(this._uploadFile, this._downloadFile, arg4));
             return result;
         }
     }
@@ -308,7 +300,10 @@ function from_candid_Scoreboard_n9(_uploadFile: (file: ExternalBlob) => Promise<
 function from_candid_TeamIcon_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TeamIcon): TeamIcon {
     return from_candid_variant_n12(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
+function from_candid_TeamRole_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _TeamRole): TeamRole {
+    return from_candid_variant_n14(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_FlagEvent]): FlagEvent | null {
@@ -317,19 +312,25 @@ function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function from_candid_record_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     team1Score: bigint;
     team2Icon: _TeamIcon;
+    team2Role: _TeamRole;
     team2Score: bigint;
     team1Icon: _TeamIcon;
+    team1Role: _TeamRole;
 }): {
     team1Score: bigint;
     team2Icon: TeamIcon;
+    team2Role: TeamRole;
     team2Score: bigint;
     team1Icon: TeamIcon;
+    team1Role: TeamRole;
 } {
     return {
         team1Score: value.team1Score,
         team2Icon: from_candid_TeamIcon_n11(_uploadFile, _downloadFile, value.team2Icon),
+        team2Role: from_candid_TeamRole_n13(_uploadFile, _downloadFile, value.team2Role),
         team2Score: value.team2Score,
-        team1Icon: from_candid_TeamIcon_n11(_uploadFile, _downloadFile, value.team1Icon)
+        team1Icon: from_candid_TeamIcon_n11(_uploadFile, _downloadFile, value.team1Icon),
+        team1Role: from_candid_TeamRole_n13(_uploadFile, _downloadFile, value.team1Role)
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -361,6 +362,15 @@ function from_candid_variant_n12(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): TeamIcon {
     return "dolphin" in value ? TeamIcon.dolphin : "tornado" in value ? TeamIcon.tornado : "fist" in value ? TeamIcon.fist : "bullfrog" in value ? TeamIcon.bullfrog : value;
 }
+function from_candid_variant_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    none: null;
+} | {
+    defense: null;
+} | {
+    offense: null;
+}): TeamRole {
+    return "none" in value ? TeamRole.none : "defense" in value ? TeamRole.defense : "offense" in value ? TeamRole.offense : value;
+}
 function from_candid_variant_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     flag: null;
 } | {
@@ -374,10 +384,13 @@ function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Ar
 function to_candid_EventType_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: EventType): _EventType {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_TeamIcon_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamIcon): _TeamIcon {
-    return to_candid_variant_n15(_uploadFile, _downloadFile, value);
+function to_candid_TeamIcon_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamIcon): _TeamIcon {
+    return to_candid_variant_n17(_uploadFile, _downloadFile, value);
 }
-function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamIcon): {
+function to_candid_TeamRole_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamRole): _TeamRole {
+    return to_candid_variant_n19(_uploadFile, _downloadFile, value);
+}
+function to_candid_variant_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamIcon): {
     dolphin: null;
 } | {
     tornado: null;
@@ -394,6 +407,21 @@ function to_candid_variant_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint
         fist: null
     } : value == TeamIcon.bullfrog ? {
         bullfrog: null
+    } : value;
+}
+function to_candid_variant_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: TeamRole): {
+    none: null;
+} | {
+    defense: null;
+} | {
+    offense: null;
+} {
+    return value == TeamRole.none ? {
+        none: null
+    } : value == TeamRole.defense ? {
+        defense: null
+    } : value == TeamRole.offense ? {
+        offense: null
     } : value;
 }
 function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: EventType): {

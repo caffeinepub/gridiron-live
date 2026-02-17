@@ -1,45 +1,36 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T21:20:00.033Z",
-  "summary": "Most requested UI changes appear implemented: viewer scoreboard and latest-event are now rendered as absolute overlays inside the video container; broadcaster score controls use manual numeric inputs; the broadcaster control panel shows a Flag flow that collects team + reason; and an on-camera flag overlay component exists. However, the diff does not provide enough evidence to confirm that flag announcements are persisted/published through the existing backend event mechanism for late joiners. Additionally, a new backend file (backend/migration.mo) was added, which conflicts with the constraint to keep backend as a single Motoko actor in backend/main.mo.",
+  "generatedAt": "2026-02-17T22:08:49.173Z",
+  "summary": "Diff adds a dedicated microphone hook, mic toggle UI, mic-specific permissions/error help, and (at least partially shown) logic on BroadcasterPage to start mic by default when live and merge an audio track into the outgoing video MediaStream. Some REQ acceptance criteria cannot be fully verified from the truncated BroadcasterPage diff, especially around removing audio from the live stream when toggled off and ensuring retry/toggle behavior affects what viewers receive without renegotiation issues.",
   "missing_requirements": [
     {
-      "id": "REQ-18",
-      "requirement": "Persist/publish flag announcements through the existing backend event mechanism so late-joining viewers can still see it in the event feed.",
-      "reason": "Frontend adds a dedicated flag overlay query/invalidation path (flag-overlays) and a flag overlay list is added to the session type, but the provided backend/main.mo diff is truncated before showing addFlagEvent implementation and whether it appends a corresponding Event into session.events (the event feed source). Therefore, persistence into the existing event mechanism cannot be verified from the diff summary.",
+      "id": "REQ-34",
+      "requirement": "Toggling mic OFF stops sending microphone audio to viewers without ending the broadcast or stopping video; toggling back ON resumes sending microphone audio to viewers.",
+      "reason": "BroadcasterPage.tsx is truncated at the point where audio merging is being implemented. The diff summary shows logic to start microphone when live and micEnabled, and to merge audio into the video stream, but does not show any corresponding logic that removes/disables the audio track from the outgoing stream when micEnabled is toggled OFF, nor the UI handler wiring that calls stopMicrophone and updates the outgoing stream accordingly.",
       "evidence": [
-        "backend/main.mo (truncated: shows Session.flagOverlays and Event.flagEvent but not addFlagEvent implementation)",
-        "frontend/src/hooks/useQueries.ts (useAddFlagEvent invalidates both ['events', sessionCode] and ['flag-overlays', sessionCode])",
-        "frontend/src/pages/ViewerWatchPage.tsx (EventFeed uses events; flag overlay uses flagOverlays)"
+        "frontend/src/pages/BroadcasterPage.tsx (truncated)",
+        "frontend/src/components/broadcast/BroadcasterMicToggle.tsx"
       ]
-    }
-  ],
-  "hallucinated_features": [
+    },
     {
-      "description": "Added a new backend module file backend/migration.mo and wired a migration runner into backend/main.mo.",
-      "reason": "The BuildRequest constraints specify the backend must remain a single Motoko actor in backend/main.mo (no additional backend services/files implied). Adding backend/migration.mo introduces an additional backend module not requested as part of the feature work.",
+      "id": "REQ-33",
+      "requirement": "If microphone permission is denied/unavailable, the UI clearly indicates that audio is not being sent and provides a retry path without breaking the video stream.",
+      "reason": "A mic-specific help component with messaging and a retry button was added, but the truncated BroadcasterPage.tsx diff does not show the conditional rendering/wiring that displays this state when mic permission is denied/unavailable while keeping the camera/video preview running, so the full AC behavior cannot be confirmed from provided evidence.",
       "evidence": [
-        "backend/migration.mo (new file)",
-        "backend/main.mo (imports Migration \"migration\" and uses Migration.run)"
+        "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
+        "frontend/src/pages/BroadcasterPage.tsx (truncated)"
       ]
     }
   ],
-  "confidence": 0.64,
+  "hallucinated_features": [],
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/broadcast/FootballControlPanel.tsx",
-    "frontend/src/components/broadcast/ScoreboardControls.tsx",
-    "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
-    "frontend/src/components/events/LatestEventOverlay.tsx",
-    "frontend/src/components/scoreboard/BottomScorebar.tsx",
-    "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
-    "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
+    "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
+    "frontend/src/hooks/useMicrophone.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
-    "frontend/src/pages/ViewerWatchPage.tsx",
     "project_state.json"
   ]
 }

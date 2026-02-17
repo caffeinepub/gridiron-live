@@ -26,27 +26,31 @@ export interface FlagEvent {
 export interface Scoreboard {
   'team1Score' : bigint,
   'team2Icon' : TeamIcon,
+  'team2Role' : TeamRole,
   'team2Score' : bigint,
   'team1Icon' : TeamIcon,
+  'team1Role' : TeamRole,
 }
 export type TeamIcon = { 'dolphin' : null } |
   { 'tornado' : null } |
   { 'fist' : null } |
   { 'bullfrog' : null };
+export type TeamRole = { 'none' : null } |
+  { 'defense' : null } |
+  { 'offense' : null };
 export type Time = bigint;
 export interface _SERVICE {
   'addEvent' : ActorMethod<[string, string, EventType], undefined>,
   'addFlagEvent' : ActorMethod<[string, string, string], undefined>,
-  'clearFlagOverlays' : ActorMethod<[string], undefined>,
   'endSession' : ActorMethod<[string], undefined>,
-  'getActiveFlagOverlays' : ActorMethod<[string], Array<FlagEvent>>,
   'getEvents' : ActorMethod<[string], Array<Event>>,
   'getScoreboard' : ActorMethod<[string], Scoreboard>,
   'getSessionMetadata' : ActorMethod<[string], [string, Time, [] | [Time]]>,
   'isValidSessionCode' : ActorMethod<[string], boolean>,
+  'setTeamIcons' : ActorMethod<[string, TeamIcon, TeamIcon], undefined>,
   'startSession' : ActorMethod<[string, string], undefined>,
   'updateScoreboard' : ActorMethod<
-    [string, bigint, bigint, TeamIcon, TeamIcon],
+    [string, bigint, bigint, TeamRole, TeamRole],
     undefined
   >,
 }

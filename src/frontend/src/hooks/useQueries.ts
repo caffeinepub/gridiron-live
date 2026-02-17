@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import { EventType, type Event, type Scoreboard, type TeamIcon, type FlagEvent } from '../backend';
+import { EventType, type Event, type Scoreboard, type TeamIcon, type TeamRole, type FlagEvent } from '../backend';
 
 export function useValidateSessionCode(sessionCode: string | undefined) {
   const { actor, isFetching } = useActor();
@@ -27,6 +27,21 @@ export function useStartSession() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['session-valid'] });
+    },
+  });
+}
+
+export function useSetTeamIcons() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ sessionCode, team1Icon, team2Icon }: { sessionCode: string; team1Icon: TeamIcon; team2Icon: TeamIcon }) => {
+      if (!actor) throw new Error('Actor not initialized');
+      await actor.setTeamIcons(sessionCode, team1Icon, team2Icon);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['scoreboard', variables.sessionCode] });
     },
   });
 }
@@ -88,7 +103,6 @@ export function useAddFlagEvent() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['events', variables.sessionCode] });
-      queryClient.invalidateQueries({ queryKey: ['flag-overlays', variables.sessionCode] });
     },
   });
 }
@@ -118,7 +132,34 @@ export function useGetSessionMetadata(sessionCode: string | undefined) {
       return { broadcaster, startTime, endTime };
     },
     enabled: !!actor && !isFetching && !!sessionCode,
-    refetchInterval: 5000,
+    refetchInterval: 3000,
+  });
+}
+
+export function useUpdateScoreboard() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      sessionCode,
+      team1Score,
+      team2Score,
+      team1Role,
+      team2Role,
+    }: {
+      sessionCode: string;
+      team1Score: bigint;
+      team2Score: bigint;
+      team1Role: TeamRole;
+      team2Role: TeamRole;
+    }) => {
+      if (!actor) throw new Error('Actor not initialized');
+      await actor.updateScoreboard(sessionCode, team1Score, team2Score, team1Role, team2Role);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['scoreboard', variables.sessionCode] });
+    },
   });
 }
 
@@ -136,58 +177,7 @@ export function useGetScoreboard(sessionCode: string | undefined) {
   });
 }
 
-export function useUpdateScoreboard() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      sessionCode,
-      team1Score,
-      team2Score,
-      team1Icon,
-      team2Icon,
-    }: {
-      sessionCode: string;
-      team1Score: bigint;
-      team2Score: bigint;
-      team1Icon: TeamIcon;
-      team2Icon: TeamIcon;
-    }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.updateScoreboard(sessionCode, team1Score, team2Score, team1Icon, team2Icon);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['scoreboard', variables.sessionCode] });
-    },
-  });
-}
-
-export function useGetActiveFlagOverlays(sessionCode: string | undefined) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<FlagEvent[]>({
-    queryKey: ['flag-overlays', sessionCode],
-    queryFn: async () => {
-      if (!actor || !sessionCode) return [];
-      return actor.getActiveFlagOverlays(sessionCode);
-    },
-    enabled: !!actor && !isFetching && !!sessionCode,
-    refetchInterval: 2000,
-  });
-}
-
-export function useClearFlagOverlays() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (sessionCode: string) => {
-      if (!actor) throw new Error('Actor not initialized');
-      await actor.clearFlagOverlays(sessionCode);
-    },
-    onSuccess: (_, sessionCode) => {
-      queryClient.invalidateQueries({ queryKey: ['flag-overlays', sessionCode] });
-    },
-  });
+export function useGetFlagEvents(sessionCode: string | undefined) {
+  const { data: events = [] } = useGetEvents(sessionCode);
+  return events.filter((event) => event.eventType === EventType.flag && event.flagEvent).map((event) => event.flagEvent!);
 }

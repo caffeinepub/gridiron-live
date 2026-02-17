@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
-import { TEAM_ICONS } from '../../lib/teamIcons';
+import { Loader2, Plus, Minus } from 'lucide-react';
+import { getTeamIconInfo, getTeamScoreboardName } from '../../lib/teamIcons';
 import { useUpdateScoreboard } from '../../hooks/useQueries';
-import type { Scoreboard, TeamIcon } from '../../backend';
+import type { Scoreboard, TeamRole } from '../../backend';
 
 interface ScoreboardControlsProps {
   sessionCode: string;
@@ -21,18 +21,23 @@ export default function ScoreboardControls({
 }: ScoreboardControlsProps) {
   const [team1Score, setTeam1Score] = useState(Number(currentScoreboard.team1Score));
   const [team2Score, setTeam2Score] = useState(Number(currentScoreboard.team2Score));
-  const [team1Icon, setTeam1Icon] = useState<TeamIcon>(currentScoreboard.team1Icon);
-  const [team2Icon, setTeam2Icon] = useState<TeamIcon>(currentScoreboard.team2Icon);
+  const [team1Role, setTeam1Role] = useState<TeamRole>(currentScoreboard.team1Role);
+  const [team2Role, setTeam2Role] = useState<TeamRole>(currentScoreboard.team2Role);
 
   const updateMutation = useUpdateScoreboard();
+
+  const team1Icon = getTeamIconInfo(currentScoreboard.team1Icon);
+  const team2Icon = getTeamIconInfo(currentScoreboard.team2Icon);
+  const team1Name = getTeamScoreboardName(currentScoreboard.team1Icon);
+  const team2Name = getTeamScoreboardName(currentScoreboard.team2Icon);
 
   const handleUpdate = async () => {
     await updateMutation.mutateAsync({
       sessionCode,
       team1Score: BigInt(team1Score),
       team2Score: BigInt(team2Score),
-      team1Icon,
-      team2Icon,
+      team1Role,
+      team2Role,
     });
   };
 
@@ -54,11 +59,37 @@ export default function ScoreboardControls({
     }
   };
 
+  const incrementTeam1Score = () => {
+    setTeam1Score((prev) => prev + 1);
+  };
+
+  const decrementTeam1Score = () => {
+    setTeam1Score((prev) => Math.max(0, prev - 1));
+  };
+
+  const incrementTeam2Score = () => {
+    setTeam2Score((prev) => prev + 1);
+  };
+
+  const decrementTeam2Score = () => {
+    setTeam2Score((prev) => Math.max(0, prev - 1));
+  };
+
+  const setTeamAOnOffense = () => {
+    setTeam1Role('offense' as TeamRole);
+    setTeam2Role('defense' as TeamRole);
+  };
+
+  const setTeamBOnOffense = () => {
+    setTeam1Role('defense' as TeamRole);
+    setTeam2Role('offense' as TeamRole);
+  };
+
   const hasChanges =
     team1Score !== Number(currentScoreboard.team1Score) ||
     team2Score !== Number(currentScoreboard.team2Score) ||
-    team1Icon !== currentScoreboard.team1Icon ||
-    team2Icon !== currentScoreboard.team2Icon;
+    team1Role !== currentScoreboard.team1Role ||
+    team2Role !== currentScoreboard.team2Role;
 
   const isProcessing = updateMutation.isPending;
 
@@ -70,8 +101,26 @@ export default function ScoreboardControls({
       <CardContent className="space-y-6">
         {/* Team A Controls */}
         <div className="space-y-3">
-          <Label className="text-sm font-semibold text-primary">Team A</Label>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 flex-shrink-0 bg-primary/20 rounded p-1 border border-primary/30">
+              <img
+                src={team1Icon.imagePath}
+                alt={team1Icon.alt}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <Label className="text-sm font-semibold text-primary">{team1Name}</Label>
+          </div>
           <div className="flex items-center gap-3">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={decrementTeam1Score}
+              disabled={disabled || isProcessing || team1Score === 0}
+              className="h-10 w-10"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
             <div className="w-24">
               <Input
                 type="number"
@@ -82,30 +131,40 @@ export default function ScoreboardControls({
                 className="text-center text-2xl font-bold scoreboard-text"
               />
             </div>
-          </div>
-          <div className="flex gap-2">
-            {TEAM_ICONS.map((icon) => (
-              <button
-                key={icon.value}
-                type="button"
-                onClick={() => setTeam1Icon(icon.value)}
-                disabled={disabled || isProcessing}
-                className={`w-14 h-14 rounded-lg border-2 p-1.5 transition-all ${
-                  team1Icon === icon.value
-                    ? 'border-primary bg-primary/20 scale-105'
-                    : 'border-border bg-card hover:border-primary/50 hover:bg-primary/10'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <img src={icon.imagePath} alt={icon.alt} className="w-full h-full object-contain" />
-              </button>
-            ))}
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={incrementTeam1Score}
+              disabled={disabled || isProcessing}
+              className="h-10 w-10"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 
         {/* Team B Controls */}
         <div className="space-y-3">
-          <Label className="text-sm font-semibold text-primary">Team B</Label>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 flex-shrink-0 bg-primary/20 rounded p-1 border border-primary/30">
+              <img
+                src={team2Icon.imagePath}
+                alt={team2Icon.alt}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <Label className="text-sm font-semibold text-primary">{team2Name}</Label>
+          </div>
           <div className="flex items-center gap-3">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={decrementTeam2Score}
+              disabled={disabled || isProcessing || team2Score === 0}
+              className="h-10 w-10"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
             <div className="w-24">
               <Input
                 type="number"
@@ -116,23 +175,38 @@ export default function ScoreboardControls({
                 className="text-center text-2xl font-bold scoreboard-text"
               />
             </div>
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={incrementTeam2Score}
+              disabled={disabled || isProcessing}
+              className="h-10 w-10"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
-          <div className="flex gap-2">
-            {TEAM_ICONS.map((icon) => (
-              <button
-                key={icon.value}
-                type="button"
-                onClick={() => setTeam2Icon(icon.value)}
-                disabled={disabled || isProcessing}
-                className={`w-14 h-14 rounded-lg border-2 p-1.5 transition-all ${
-                  team2Icon === icon.value
-                    ? 'border-primary bg-primary/20 scale-105'
-                    : 'border-border bg-card hover:border-primary/50 hover:bg-primary/10'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                <img src={icon.imagePath} alt={icon.alt} className="w-full h-full object-contain" />
-              </button>
-            ))}
+        </div>
+
+        {/* Offense Selector */}
+        <div className="space-y-3">
+          <Label className="text-sm font-semibold text-primary">On Offense</Label>
+          <div className="flex gap-3">
+            <Button
+              variant={team1Role === 'offense' ? 'default' : 'outline'}
+              onClick={setTeamAOnOffense}
+              disabled={disabled || isProcessing}
+              className="flex-1"
+            >
+              {team1Name}
+            </Button>
+            <Button
+              variant={team2Role === 'offense' ? 'default' : 'outline'}
+              onClick={setTeamBOnOffense}
+              disabled={disabled || isProcessing}
+              className="flex-1"
+            >
+              {team2Name}
+            </Button>
           </div>
         </div>
 

@@ -37,3 +37,22 @@ export const TEAM_ICONS: TeamIconInfo[] = [
 export function getTeamIconInfo(icon: TeamIcon): TeamIconInfo {
   return TEAM_ICONS.find((i) => i.value === icon) || TEAM_ICONS[0];
 }
+
+/**
+ * Returns the one-word scoreboard team name for the given icon.
+ * Mappings: fist→Titans, tornado→Twisters, bullfrog→Bullfrogs, dolphin→Dolphins
+ */
+export function getTeamScoreboardName(icon: TeamIcon): string {
+  switch (icon) {
+    case TeamIcon.fist:
+      return 'Titans';
+    case TeamIcon.tornado:
+      return 'Twisters';
+    case TeamIcon.bullfrog:
+      return 'Bullfrogs';
+    case TeamIcon.dolphin:
+      return 'Dolphins';
+    default:
+      return 'Team';
+  }
+}

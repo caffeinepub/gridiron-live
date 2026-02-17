@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useStartSession, useEndSession } from './useQueries';
+import { useStartSession, useEndSession, useSetTeamIcons } from './useQueries';
+import { TeamIcon } from '../backend';
 
 export type BroadcastStatus = 'idle' | 'starting' | 'live' | 'ending' | 'ended';
 
@@ -8,6 +9,7 @@ export function useBroadcasterSession() {
   const [sessionCode, setSessionCode] = useState<string | null>(null);
   const startSessionMutation = useStartSession();
   const endSessionMutation = useEndSession();
+  const setTeamIconsMutation = useSetTeamIcons();
 
   const generateSessionCode = useCallback(() => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -19,13 +21,18 @@ export function useBroadcasterSession() {
   }, []);
 
   const startSession = useCallback(
-    async (broadcasterName: string) => {
+    async (broadcasterName: string, team1Icon: TeamIcon, team2Icon: TeamIcon) => {
       setStatus('starting');
       const code = generateSessionCode();
       try {
         await startSessionMutation.mutateAsync({
           broadcaster: broadcasterName,
           sessionCode: code,
+        });
+        await setTeamIconsMutation.mutateAsync({
+          sessionCode: code,
+          team1Icon,
+          team2Icon,
         });
         setSessionCode(code);
         setStatus('live');
@@ -36,7 +43,7 @@ export function useBroadcasterSession() {
         throw error;
       }
     },
-    [startSessionMutation, generateSessionCode]
+    [startSessionMutation, setTeamIconsMutation, generateSessionCode]
   );
 
   const endSession = useCallback(async () => {

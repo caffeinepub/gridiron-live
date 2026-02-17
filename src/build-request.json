@@ -1,136 +1,88 @@
 {
   "kind": "build_request",
-  "title": "Move scoreboard and flag announcements onto the video (on-camera), switch to manual score entry, and remove point button",
-  "projectName": "VillanSpoon Broadcast",
+  "title": "Fix broadcaster audio and add mic toggle (default ON)",
+  "projectName": "VillanSpoon Live",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-14",
-      "text": "Replace the Viewer Watch page’s fixed bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay rendered inside the video container, visible while watching.",
+      "id": "REQ-33",
+      "text": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "just the on camera one because its hard to see the on screen one"
+          "1 yes 2 yes 3yes"
         ]
       },
       "acceptanceCriteria": [
-        "On the viewer watch page, the fixed/sticky BottomScorebar UI is no longer shown at the bottom of the screen.",
-        "A scoreboard overlay is rendered on top of the video area and anchored to the bottom of the video frame.",
-        "The overlay shows both teams’ selected icons and current scores and continues to update as the backend scoreboard changes."
+        "When a broadcast is live and the broadcaster has granted microphone permission, viewers hear the broadcaster audio while watching the stream.",
+        "The broadcaster stream includes an audio track (not video-only) when mic is enabled.",
+        "If microphone permission is denied/unavailable, the UI clearly indicates that audio is not being sent and provides a retry path without breaking the video stream."
       ]
     },
     {
-      "id": "REQ-15",
-      "text": "Add the text label \"VillanSpoon\" in the left corner of the on-camera scoreboard overlay on BOTH the broadcaster camera preview and the viewer stream view.",
+      "id": "REQ-34",
+      "text": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "also put VillanSpoon in the corner of the scoreboard",
-          "for 1 exactly for 2 left and 3 both"
+          "1 yes 2 yes 3yes"
         ]
       },
       "acceptanceCriteria": [
-        "The on-camera scoreboard overlay includes the exact text \"VillanSpoon\".",
-        "The label is positioned in the left corner of the overlay (top-left or bottom-left within the overlay, but clearly in the left corner).",
-        "The label appears in both the broadcaster camera preview overlay and the viewer on-video overlay."
+        "A mic toggle is visible on the Broadcaster live view while streaming (not just during pre-live setup).",
+        "Mic defaults to ON at the start of a broadcast.",
+        "Toggling mic OFF stops sending microphone audio to viewers without ending the broadcast or stopping video.",
+        "Toggling mic back ON resumes sending microphone audio to viewers (without requiring restarting the whole session, unless the browser requires re-permission/re-acquire—in that case show a clear instruction and a retry action).",
+        "The toggle label/state uses English user-facing text (e.g., \"Mic On\" / \"Mic Off\")."
       ]
     },
     {
-      "id": "REQ-16",
-      "text": "Change broadcaster score editing to manual score entry (no +/− buttons) while keeping live-updating custom scores persisted to the backend.",
+      "id": "REQ-35",
+      "text": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "manual",
-          "get rid of the button keep the custom scores"
+          "1 yes 2 yes 3yes"
         ]
       },
       "acceptanceCriteria": [
-        "Broadcaster can manually enter Team A and Team B scores via numeric input fields (or equivalent manual entry UI) instead of increment/decrement controls.",
-        "Saving/updating scores uses the existing scoreboard update flow so viewers see the updated scores.",
-        "Invalid values are prevented or handled safely (e.g., non-numeric rejected; negative scores not allowed)."
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "text": "Remove the \"Score\" / point button from the broadcaster game controls so the broadcaster cannot add a point/score event via that button.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "you stiil need to get rid of the point button",
-          "get rid of the button keep the custom scores"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The broadcaster UI no longer displays a \"Score\" (point) button in the game controls.",
-        "No point/score event is emitted from the removed button path."
-      ]
-    },
-    {
-      "id": "REQ-18",
-      "text": "Update the broadcaster \"Flag\" control to require selecting which team the flag applies to and entering a reason, then publish that flag announcement so it appears as an on-camera overlay over the video (visible to both broadcaster and viewers).",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "the flag button you slect and the reason why",
-          "yes but put it on the scoreboard",
-          "announce it om the camera not the screen",
-          "2 yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When the broadcaster triggers a flag, the UI collects (a) the team (Team A or Team B) and (b) a reason text before publishing.",
-        "The published flag announcement is visible as an overlay on top of the video area (not only in the side feed / below the video) for viewers.",
-        "The broadcaster camera preview also shows the same flag overlay on top of the video area.",
-        "The overlay text includes both the selected team and the entered reason in English user-facing text.",
-        "The flag announcement is persisted/published through the existing backend event mechanism so late-joining viewers can still see it in the event feed."
-      ]
-    },
-    {
-      "id": "REQ-19",
-      "text": "Ensure the viewer’s latest-event presentation is on-camera (over-video) rather than a separate card below the video when an event arrives (especially flags).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "announce it om the camera not the screen"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Latest event UI is rendered as an overlay within the viewer video container (absolute-positioned over video), not as a normal-flow element beneath it.",
-        "Overlay remains temporary/auto-dismissed similar to the current latest event behavior."
+        "If the user blocks microphone permission, the broadcaster UI shows a clear microphone-specific error state and guidance.",
+        "If the device has no microphone or the browser cannot capture audio, the broadcaster UI shows an unsupported/unavailable message for mic capture.",
+        "Camera-only operation remains possible even when mic capture is unavailable (video preview continues)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or any other paths listed as immutable in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/components/ui (Shadcn UI components are read-only).",
+    "Do not edit files listed in frontend.immutablePaths (compose around them instead).",
+    "Backend must remain single-actor Motoko; only add backend changes if strictly required for audio delivery."
   ],
   "nonGoals": [
-    "Do not add third-party streaming providers or external databases.",
-    "Do not add new authentication providers beyond Internet Identity.",
-    "Do not redesign unrelated pages outside broadcaster/viewer watch flows beyond what is necessary to implement the on-camera overlays and control changes."
+    "Implementing third-party audio processing, noise suppression services, or external streaming providers.",
+    "Adding multi-party voice chat or viewer-to-broadcaster audio.",
+    "Adding recording or saving audio/video to backend storage."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

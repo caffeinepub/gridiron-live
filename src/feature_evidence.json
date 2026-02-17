@@ -2,12 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-replace-the-viewer-watch-page-s-fixed-bottom-of-screen-scorebar-with-an-on-camera-over-video-bottom-scoreboard-overlay-rendered-inside-the-video-container-visible-while-watching",
-      "featureTitle": "Replace the Viewer Watch page’s fixed bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay rendered inside the video container, visible while watching.",
+      "featureId": "feature-ensure-the-broadcaster-stream-captures-and-transmits-microphone-audio-so-viewers-can-hear-the-broadcaster-reliably-during-a-live-session-i-e-the-outgoing-stream-must-include-an-audio-track-when-mic-is-enabled",
+      "featureTitle": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
       "files": [
-        "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-        "frontend/src/pages/ViewerWatchPage.tsx"
+        "frontend/src/hooks/useMicrophone.ts",
+        "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -18,17 +17,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-14"
+        "REQ-33"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-the-text-label-villanspoon-in-the-left-corner-of-the-on-camera-scoreboard-overlay-on-both-the-broadcaster-camera-preview-and-the-viewer-stream-view",
-      "featureTitle": "Add the text label \"VillanSpoon\" in the left corner of the on-camera scoreboard overlay on BOTH the broadcaster camera preview and the viewer stream view.",
+      "featureId": "feature-add-a-broadcaster-mic-on-off-toggle-control-during-live-streaming-defaulting-to-mic-on-when-the-broadcast-starts-and-make-the-toggle-immediately-affect-whether-microphone-audio-is-sent-to-viewers",
+      "featureTitle": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
       "files": [
-        "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
-        "frontend/src/pages/BroadcasterPage.tsx",
-        "frontend/src/pages/ViewerWatchPage.tsx"
+        "frontend/src/components/broadcast/BroadcasterMicToggle.tsx",
+        "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -39,15 +37,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-15"
+        "REQ-34"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-change-broadcaster-score-editing-to-manual-score-entry-no-buttons-while-keeping-live-updating-custom-scores-persisted-to-the-backend",
-      "featureTitle": "Change broadcaster score editing to manual score entry (no +/− buttons) while keeping live-updating custom scores persisted to the backend.",
+      "featureId": "feature-update-broadcaster-side-permission-error-handling-to-cover-microphone-access-in-addition-to-camera-including-clear-english-messaging-when-mic-is-blocked-unavailable-and-guidance-to-enable-it",
+      "featureTitle": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
       "files": [
-        "frontend/src/components/broadcast/ScoreboardControls.tsx"
+        "frontend/src/components/broadcast/MicrophonePermissionsHelp.tsx",
+        "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -58,70 +57,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-16"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-remove-the-score-point-button-from-the-broadcaster-game-controls-so-the-broadcaster-cannot-add-a-point-score-event-via-that-button",
-      "featureTitle": "Remove the \"Score\" / point button from the broadcaster game controls so the broadcaster cannot add a point/score event via that button.",
-      "files": [
-        "frontend/src/components/broadcast/FootballControlPanel.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-17"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-broadcaster-flag-control-to-require-selecting-which-team-the-flag-applies-to-and-entering-a-reason-then-publish-that-flag-announcement-so-it-appears-as-an-on-camera-overlay-over-the-video-visible-to-both-broadcaster-and-viewers",
-      "featureTitle": "Update the broadcaster \"Flag\" control to require selecting which team the flag applies to and entering a reason, then publish that flag announcement so it appears as an on-camera overlay over the video (visible to both broadcaster and viewers).",
-      "files": [
-        "frontend/src/components/broadcast/FootballControlPanel.tsx",
-        "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/BroadcasterPage.tsx",
-        "frontend/src/pages/ViewerWatchPage.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-18"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-the-viewer-s-latest-event-presentation-is-on-camera-over-video-rather-than-a-separate-card-below-the-video-when-an-event-arrives-especially-flags",
-      "featureTitle": "Ensure the viewer’s latest-event presentation is on-camera (over-video) rather than a separate card below the video when an event arrives (especially flags).",
-      "files": [
-        "frontend/src/components/events/LatestEventOverlay.tsx",
-        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
-        "frontend/src/pages/ViewerWatchPage.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-19"
+        "REQ-35"
       ],
       "confidence": "high"
     }

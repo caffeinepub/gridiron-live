@@ -7,9 +7,10 @@ import Iter "mo:core/Iter";
 import Order "mo:core/Order";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
-import Migration "migration";
+import Bool "mo:core/Bool";
 
-(with migration = Migration.run)
+
+
 actor {
   type TeamIcon = {
     #dolphin;
@@ -18,11 +19,19 @@ actor {
     #tornado;
   };
 
+  type TeamRole = {
+    #offense;
+    #defense;
+    #none;
+  };
+
   type Scoreboard = {
     team1Score : Nat;
     team2Score : Nat;
     team1Icon : TeamIcon;
     team2Icon : TeamIcon;
+    team1Role : TeamRole;
+    team2Role : TeamRole;
   };
 
   type EventType = {
@@ -55,7 +64,7 @@ actor {
     endTime : ?Time.Time;
     events : List.List<Event>;
     scoreboard : Scoreboard;
-    flagOverlays : List.List<FlagEvent>;
+    teamIconsChosen : Bool;
   };
 
   let sessions = Map.empty<Text, Session>();
@@ -85,10 +94,39 @@ actor {
         team2Score = 0;
         team1Icon = #dolphin;
         team2Icon = #bullfrog;
+        team1Role = #none;
+        team2Role = #none;
       };
-      flagOverlays = List.empty<FlagEvent>();
+      teamIconsChosen = false;
     };
     sessions.add(sessionCode, newSession);
+  };
+
+  public shared ({ caller }) func setTeamIcons(sessionCode : Text, team1Icon : TeamIcon, team2Icon : TeamIcon) : async () {
+    let session = getSessionOrTrap(sessionCode);
+
+    if (session.teamIconsChosen) {
+      Runtime.trap("Team icons already chosen for this session");
+    };
+
+    let updatedScoreboard : Scoreboard = {
+      team1Score = session.scoreboard.team1Score;
+      team2Score = session.scoreboard.team2Score;
+      team1Icon;
+      team2Icon;
+      team1Role = session.scoreboard.team1Role;
+      team2Role = session.scoreboard.team2Role;
+    };
+
+    let updatedSession : Session = {
+      broadcaster = session.broadcaster;
+      startTime = session.startTime;
+      endTime = session.endTime;
+      events = session.events;
+      scoreboard = updatedScoreboard;
+      teamIconsChosen = true;
+    };
+    sessions.add(sessionCode, updatedSession);
   };
 
   public shared ({ caller }) func endSession(sessionCode : Text) : async () {
@@ -102,7 +140,7 @@ actor {
       endTime = ?Time.now();
       events = session.events;
       scoreboard = session.scoreboard;
-      flagOverlays = session.flagOverlays;
+      teamIconsChosen = session.teamIconsChosen;
     };
     sessions.add(sessionCode, updatedSession);
   };
@@ -112,6 +150,10 @@ actor {
 
     if (session.endTime != null) {
       Runtime.trap("Cannot add events to a finished session");
+    };
+
+    if (not session.teamIconsChosen) {
+      Runtime.trap("Please choose team icons before any events");
     };
 
     var newEvent : Event = {
@@ -138,18 +180,24 @@ actor {
     (session.broadcaster, session.startTime, session.endTime);
   };
 
-  public shared ({ caller }) func updateScoreboard(sessionCode : Text, team1Score : Nat, team2Score : Nat, team1Icon : TeamIcon, team2Icon : TeamIcon) : async () {
+  public shared ({ caller }) func updateScoreboard(sessionCode : Text, team1Score : Nat, team2Score : Nat, team1Role : TeamRole, team2Role : TeamRole) : async () {
     let session = getSessionOrTrap(sessionCode);
 
     if (session.endTime != null) {
       Runtime.trap("Cannot update scoreboard for a finished session");
     };
 
+    if (not session.teamIconsChosen) {
+      Runtime.trap("Please choose team icons before updating scoreboard");
+    };
+
     let updatedScoreboard : Scoreboard = {
       team1Score;
       team2Score;
-      team1Icon;
-      team2Icon;
+      team1Icon = session.scoreboard.team1Icon;
+      team2Icon = session.scoreboard.team2Icon;
+      team1Role;
+      team2Role;
     };
 
     let updatedSession : Session = {
@@ -158,7 +206,7 @@ actor {
       endTime = session.endTime;
       events = session.events;
       scoreboard = updatedScoreboard;
-      flagOverlays = session.flagOverlays;
+      teamIconsChosen = session.teamIconsChosen;
     };
     sessions.add(sessionCode, updatedSession);
   };
@@ -175,6 +223,10 @@ actor {
       Runtime.trap("Cannot add events to a finished session");
     };
 
+    if (not session.teamIconsChosen) {
+      Runtime.trap("Please choose team icons before adding flag events");
+    };
+
     let flagEvent : FlagEvent = {
       team;
       reason;
@@ -189,24 +241,5 @@ actor {
     };
 
     session.events.add(newEvent);
-    session.flagOverlays.add(flagEvent);
-  };
-
-  public query ({ caller }) func getActiveFlagOverlays(sessionCode : Text) : async [FlagEvent] {
-    let session = getSessionOrTrap(sessionCode);
-    session.flagOverlays.toArray();
-  };
-
-  public shared ({ caller }) func clearFlagOverlays(sessionCode : Text) : async () {
-    let session = getSessionOrTrap(sessionCode);
-    let updatedSession : Session = {
-      broadcaster = session.broadcaster;
-      startTime = session.startTime;
-      endTime = session.endTime;
-      events = session.events;
-      scoreboard = session.scoreboard;
-      flagOverlays = List.empty<FlagEvent>();
-    };
-    sessions.add(sessionCode, updatedSession);
   };
 };

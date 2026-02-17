@@ -1,18 +1,25 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
+  "projectStateVersion": 17,
   "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
   "architectural_notes": [
     "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
     "Support a fixed session code ('pinedo') for the primary broadcast flow (no code generation needed for this mode).",
     "Render scoreboard UI as an overlay on the video element/stream (bottom of camera) for both broadcaster preview and viewer playback; remove the separate bottom-of-screen scorebar UI.",
     "Flag events should render as a temporary on-video overlay (team + reason) visible to both broadcaster and viewers.",
-    "Score updates should be set via manual entry controls (no +1 point button) and persisted so viewers see updates."
+    "Score updates should be set via manual entry controls (no +1 point button) and persisted so viewers see updates.",
+    "Scoreboard overlay: reduce overlay height (smaller vertical footprint) while keeping it on-video for both broadcaster and viewer.",
+    "Flag overlay: show the entered reason; position the overlay on the selected team’s side (left/right); auto-hide after 3 seconds.",
+    "Scoreboard overlay should display a one-word team name mapped from the selected icon: fist→Titans, tornado→Twisters, bullfrog→Bullfrogs, dolphin→Dolphins.",
+    "Score editing controls: keep manual score entry AND add +/− adjustment buttons in the same broadcaster score edit panel.",
+    "Add an offense indicator arrow to the scoreboard overlay; broadcaster can toggle which team is on offense from the score edit panel and viewers see updates in real time."
   ],
   "known_issues": [
-    "Previous build attempt failed with: \"AI was unable to complete your request.\""
+    "Previous build attempt failed with: \"AI was unable to complete your request.\"",
+    "Flag overlay is not auto-dismissing (currently lasts indefinitely) despite intended 3-second timeout.",
+    "Viewers cannot currently hear broadcaster audio (stream likely missing or not sending microphone audio track reliably)."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-create-a-football-themed-ui-and-layout-used-consistently-across-the-app-colors-typography-spacing-and-components-with-a-distinct-style-appropriate-for-a-live-football-broadcast-control-room",
@@ -149,6 +156,126 @@
         "REQ-19"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-reduce-the-on-camera-bottom-scoreboard-overlay-height-make-it-smaller-vertically-on-both-the-broadcaster-camera-preview-and-the-viewer-watch-video-without-changing-its-width-or-removing-any-existing-content-team-icons-scores-and-the-villanspoon-label",
+      "title": "Reduce the on-camera bottom scoreboard overlay height (make it smaller vertically) on both the broadcaster camera preview and the viewer watch video, without changing its width or removing any existing content (team icons, scores, and the \"VillanSpoon\" label).",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-flag-announcement-on-camera-overlay-to-appear-on-the-side-of-the-video-corresponding-to-the-selected-team-if-the-flag-event-team-is-team-a-then-render-the-overlay-on-the-left-side-if-the-team-is-team-b-then-render-it-on-the-right-side",
+      "title": "Update the flag announcement on-camera overlay to appear on the side of the video corresponding to the selected team: if the flag event team is \"Team A\" then render the overlay on the left side; if the team is \"Team B\" then render it on the right side.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-flag-announcement-overlays-automatically-dismiss-after-3-seconds-while-still-displaying-the-entered-reason-text-ensure-viewers-and-the-broadcaster-both-stop-seeing-the-overlay-after-3-seconds-without-requiring-manual-action",
+      "title": "Make flag announcement overlays automatically dismiss after 3 seconds while still displaying the entered reason text; ensure viewers and the broadcaster both stop seeing the overlay after ~3 seconds without requiring manual action.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-flag-announcement-overlay-so-it-reliably-auto-dismisses-after-3-seconds-on-both-the-broadcaster-camera-preview-and-the-viewer-watch-video-it-must-not-persist-indefinitely",
+      "title": "Fix the flag announcement overlay so it reliably auto-dismisses after ~3 seconds on BOTH the broadcaster camera preview and the viewer watch video (it must not persist indefinitely).",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-on-camera-bottom-scoreboard-overlay-even-smaller-vertically-on-both-broadcaster-and-viewer-views-without-changing-its-width-and-without-removing-any-existing-content-team-icons-scores-and-the-villanspoon-label",
+      "title": "Make the on-camera bottom scoreboard overlay even smaller vertically on both broadcaster and viewer views, without changing its width and without removing any existing content (team icons, scores, and the \"VillanSpoon\" label).",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-on-camera-scoreboard-overlay-to-display-a-one-word-team-name-derived-from-the-selected-team-icon-using-exactly-these-mappings-fist-titans-tornado-twisters-bullfrog-bullfrogs-dolphin-dolphins-do-not-display-multi-word-names-for-these-teams",
+      "title": "Update the on-camera scoreboard overlay to display a one-word team name derived from the selected team icon, using exactly these mappings: fist → \"Titans\", tornado → \"Twisters\", bullfrog → \"Bullfrogs\", dolphin → \"Dolphins\". Do not display multi-word names for these teams.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-broadcaster-scoreboard-controls-panel-to-keep-manual-score-entry-and-also-provide-and-buttons-for-team-a-and-team-b-that-adjust-the-corresponding-score-without-allowing-scores-to-go-below-0-and-include-an-in-panel-control-to-select-which-team-is-on-offense",
+      "title": "Update the broadcaster Scoreboard Controls panel to keep manual score entry and also provide + and − buttons for Team A and Team B that adjust the corresponding score without allowing scores to go below 0, and include an in-panel control to select which team is on offense.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-an-offense-arrow-indicator-on-the-on-camera-scoreboard-overlay-pointing-to-the-team-that-is-currently-marked-as-on-offense-and-show-it-consistently-in-both-the-broadcaster-camera-preview-and-the-viewer-watch-video-overlay",
+      "title": "Render an offense arrow indicator on the on-camera scoreboard overlay pointing to the team that is currently marked as on offense, and show it consistently in both the broadcaster camera preview and the viewer watch video overlay.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-on-camera-scoreboard-overlay-to-remove-the-vs-divider-and-replace-it-with-a-single-offense-arrow-placed-exactly-centered-between-the-two-teams-the-arrow-must-point-toward-the-team-currently-marked-as-on-offense-left-when-team-a-is-on-offense-right-when-team-b-is-on-offense-and-the-arrow-must-remain-centered-regardless-of-screen-size",
+      "title": "Update the on-camera scoreboard overlay to remove the \"VS\" divider and replace it with a single offense arrow placed exactly centered between the two teams; the arrow must point toward the team currently marked as on offense (left when Team A is on offense, right when Team B is on offense), and the arrow must remain centered regardless of screen size.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-the-broadcaster-flag-event-ui-and-the-resulting-flag-overlay-text-to-use-the-current-teams-mapped-names-titans-twisters-bullfrogs-dolphins-derived-from-the-selected-team-icons-instead-of-showing-generic-labels-team-a-and-team-b",
+      "title": "Change the broadcaster Flag Event UI and the resulting flag overlay text to use the current teams’ mapped names (Titans/Twisters/Bullfrogs/Dolphins) derived from the selected team icons, instead of showing generic labels \"Team A\" and \"Team B\".",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-required-pre-live-setup-step-on-the-broadcaster-start-flow-where-the-broadcaster-must-select-team-a-and-team-b-icons-restricted-to-the-existing-four-allowed-icons-before-they-can-start-the-broadcast-once-the-session-starts-persist-the-chosen-team-icons-to-the-backend-scoreboard-immediately-so-viewers-see-the-correct-teams-from-the-beginning",
+      "title": "Add a required pre-live setup step on the broadcaster start flow where the broadcaster must select Team A and Team B icons (restricted to the existing four allowed icons) before they can start the broadcast; once the session starts, persist the chosen team icons to the backend scoreboard immediately so viewers see the correct teams from the beginning.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-optional-automatic-subtitles-for-viewers-using-the-browser-s-built-in-speech-to-text-capabilities-no-external-services-add-a-viewer-facing-toggle-to-enable-disable-subtitles-and-display-the-recognized-text-as-a-caption-overlay-within-the-video-container-when-enabled-show-a-clear-unsupported-message-when-the-browser-does-not-support-the-required-speech-recognition-api",
+      "title": "Implement optional automatic subtitles for viewers using the browser’s built-in speech-to-text capabilities (no external services): add a viewer-facing toggle to enable/disable subtitles and display the recognized text as a caption overlay within the video container when enabled; show a clear unsupported message when the browser does not support the required speech recognition API.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-broadcaster-stream-captures-and-transmits-microphone-audio-so-viewers-can-hear-the-broadcaster-reliably-during-a-live-session-i-e-the-outgoing-stream-must-include-an-audio-track-when-mic-is-enabled",
+      "title": "Ensure the broadcaster stream captures and transmits microphone audio so viewers can hear the broadcaster reliably during a live session (i.e., the outgoing stream must include an audio track when mic is enabled).",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-broadcaster-mic-on-off-toggle-control-during-live-streaming-defaulting-to-mic-on-when-the-broadcast-starts-and-make-the-toggle-immediately-affect-whether-microphone-audio-is-sent-to-viewers",
+      "title": "Add a broadcaster mic on/off toggle control during live streaming, defaulting to mic ON when the broadcast starts, and make the toggle immediately affect whether microphone audio is sent to viewers.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-broadcaster-side-permission-error-handling-to-cover-microphone-access-in-addition-to-camera-including-clear-english-messaging-when-mic-is-blocked-unavailable-and-guidance-to-enable-it",
+      "title": "Update broadcaster-side permission/error handling to cover microphone access (in addition to camera), including clear English messaging when mic is blocked/unavailable and guidance to enable it.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -225,6 +352,80 @@
     {
       "id": "AR-18",
       "summary": "Add a \"VillanSpoon\" label/watermark in the left corner of the scoreboard overlay (both broadcaster and viewer)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Reduce the on-camera scoreboard overlay height (make scoreboard smaller vertically)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Flag overlay should show the entered reason, appear on the selected team’s side (left/right), and auto-dismiss after 3 seconds",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Show a one-word team name on the scoreboard derived from the selected team icon (fist→Titans, tornado→Twisters, bullfrog→Bullfrogs, dolphin→Dolphins)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Keep manual score entry but also add +/− buttons for adjusting points in the broadcaster score edit panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Add a broadcaster-selectable offense indicator (arrow pointing to the team on offense) shown on the on-camera scoreboard overlay; selector located in the same score edit panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Extend the per-session scoreboard state to include which team is currently on offense, and expose this value via existing scoreboard fetch/update flows so both broadcaster and viewers receive it when polling the scoreboard.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Center the offense arrow in the middle of the scoreboard overlay by replacing the 'VS' separator; arrow points left/right toward the team currently on offense",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Require a pre-live setup step where the broadcaster must select Team A and Team B (from the four allowed team icons) before starting the stream",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Display flag announcements using the current teams’ mapped names (Titans/Twisters/Bullfrogs/Dolphins) instead of generic 'Team A/B'",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add automatic subtitles (speech-to-text captions) for viewers, implemented as an optional/toggleable feature",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Fix broadcaster audio so viewers can hear the broadcaster reliably (ensure mic audio is captured and sent with the stream)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Add a broadcaster mic on/off toggle during live streaming (defaults to mic ON at start)",
       "reqIds": [],
       "status": "pending"
     }

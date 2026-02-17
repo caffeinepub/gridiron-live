@@ -27,23 +27,24 @@ export const TeamIcon = IDL.Variant({
   'fist' : IDL.Null,
   'bullfrog' : IDL.Null,
 });
+export const TeamRole = IDL.Variant({
+  'none' : IDL.Null,
+  'defense' : IDL.Null,
+  'offense' : IDL.Null,
+});
 export const Scoreboard = IDL.Record({
   'team1Score' : IDL.Nat,
   'team2Icon' : TeamIcon,
+  'team2Role' : TeamRole,
   'team2Score' : IDL.Nat,
   'team1Icon' : TeamIcon,
+  'team1Role' : TeamRole,
 });
 
 export const idlService = IDL.Service({
   'addEvent' : IDL.Func([IDL.Text, IDL.Text, EventType], [], []),
   'addFlagEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-  'clearFlagOverlays' : IDL.Func([IDL.Text], [], []),
   'endSession' : IDL.Func([IDL.Text], [], []),
-  'getActiveFlagOverlays' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(FlagEvent)],
-      ['query'],
-    ),
   'getEvents' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
   'getScoreboard' : IDL.Func([IDL.Text], [Scoreboard], ['query']),
   'getSessionMetadata' : IDL.Func(
@@ -52,9 +53,10 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isValidSessionCode' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'setTeamIcons' : IDL.Func([IDL.Text, TeamIcon, TeamIcon], [], []),
   'startSession' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateScoreboard' : IDL.Func(
-      [IDL.Text, IDL.Nat, IDL.Nat, TeamIcon, TeamIcon],
+      [IDL.Text, IDL.Nat, IDL.Nat, TeamRole, TeamRole],
       [],
       [],
     ),
@@ -82,23 +84,24 @@ export const idlFactory = ({ IDL }) => {
     'fist' : IDL.Null,
     'bullfrog' : IDL.Null,
   });
+  const TeamRole = IDL.Variant({
+    'none' : IDL.Null,
+    'defense' : IDL.Null,
+    'offense' : IDL.Null,
+  });
   const Scoreboard = IDL.Record({
     'team1Score' : IDL.Nat,
     'team2Icon' : TeamIcon,
+    'team2Role' : TeamRole,
     'team2Score' : IDL.Nat,
     'team1Icon' : TeamIcon,
+    'team1Role' : TeamRole,
   });
   
   return IDL.Service({
     'addEvent' : IDL.Func([IDL.Text, IDL.Text, EventType], [], []),
     'addFlagEvent' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
-    'clearFlagOverlays' : IDL.Func([IDL.Text], [], []),
     'endSession' : IDL.Func([IDL.Text], [], []),
-    'getActiveFlagOverlays' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(FlagEvent)],
-        ['query'],
-      ),
     'getEvents' : IDL.Func([IDL.Text], [IDL.Vec(Event)], ['query']),
     'getScoreboard' : IDL.Func([IDL.Text], [Scoreboard], ['query']),
     'getSessionMetadata' : IDL.Func(
@@ -107,9 +110,10 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isValidSessionCode' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'setTeamIcons' : IDL.Func([IDL.Text, TeamIcon, TeamIcon], [], []),
     'startSession' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateScoreboard' : IDL.Func(
-        [IDL.Text, IDL.Nat, IDL.Nat, TeamIcon, TeamIcon],
+        [IDL.Text, IDL.Nat, IDL.Nat, TeamRole, TeamRole],
         [],
         [],
       ),

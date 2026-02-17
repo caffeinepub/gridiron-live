@@ -6,18 +6,24 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAddFlagEvent } from '../../hooks/useQueries';
 import { Loader2 } from 'lucide-react';
+import { getTeamScoreboardName } from '../../lib/teamIcons';
+import type { Scoreboard } from '../../backend';
 
 interface FootballControlPanelProps {
   sessionCode: string;
   disabled?: boolean;
+  scoreboard?: Scoreboard;
 }
 
-export default function FootballControlPanel({ sessionCode, disabled }: FootballControlPanelProps) {
+export default function FootballControlPanel({ sessionCode, disabled, scoreboard }: FootballControlPanelProps) {
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<'Team A' | 'Team B' | ''>('');
+  const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | ''>('');
   const [flagReason, setFlagReason] = useState('');
 
   const addFlagMutation = useAddFlagEvent();
+
+  const team1Name = scoreboard ? getTeamScoreboardName(scoreboard.team1Icon) : 'Team A';
+  const team2Name = scoreboard ? getTeamScoreboardName(scoreboard.team2Icon) : 'Team B';
 
   const handleFlagClick = () => {
     setFlagDialogOpen(true);
@@ -26,11 +32,13 @@ export default function FootballControlPanel({ sessionCode, disabled }: Football
   };
 
   const handleFlagSubmit = async () => {
-    if (!selectedTeam || !flagReason.trim()) return;
+    if (!selectedTeam || !flagReason.trim() || !scoreboard) return;
+
+    const teamName = selectedTeam === 'team1' ? team1Name : team2Name;
 
     await addFlagMutation.mutateAsync({
       sessionCode,
-      team: selectedTeam,
+      team: teamName,
       reason: flagReason.trim(),
     });
 
@@ -40,7 +48,8 @@ export default function FootballControlPanel({ sessionCode, disabled }: Football
   };
 
   const isProcessing = addFlagMutation.isPending;
-  const canSubmit = selectedTeam && flagReason.trim() && !isProcessing;
+  const canSubmit = selectedTeam && flagReason.trim() && !isProcessing && scoreboard;
+  const isBlocked = !scoreboard;
 
   return (
     <>
@@ -54,7 +63,8 @@ export default function FootballControlPanel({ sessionCode, disabled }: Football
             variant="destructive"
             className="w-full h-32 flex flex-col gap-3 text-lg"
             onClick={handleFlagClick}
-            disabled={disabled || isProcessing}
+            disabled={disabled || isProcessing || isBlocked}
+            title={isBlocked ? 'Please select team icons before adding flags' : undefined}
           >
             <img
               src="/assets/generated/icon-flag.dim_256x256.png"
@@ -63,6 +73,11 @@ export default function FootballControlPanel({ sessionCode, disabled }: Football
             />
             <span className="scoreboard-text">Flag</span>
           </Button>
+          {isBlocked && (
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              Select team icons to enable flags
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -76,20 +91,20 @@ export default function FootballControlPanel({ sessionCode, disabled }: Football
               <Label>Select Team</Label>
               <div className="flex gap-2">
                 <Button
-                  variant={selectedTeam === 'Team A' ? 'default' : 'outline'}
+                  variant={selectedTeam === 'team1' ? 'default' : 'outline'}
                   className="flex-1"
-                  onClick={() => setSelectedTeam('Team A')}
+                  onClick={() => setSelectedTeam('team1')}
                   disabled={isProcessing}
                 >
-                  Team A
+                  {team1Name}
                 </Button>
                 <Button
-                  variant={selectedTeam === 'Team B' ? 'default' : 'outline'}
+                  variant={selectedTeam === 'team2' ? 'default' : 'outline'}
                   className="flex-1"
-                  onClick={() => setSelectedTeam('Team B')}
+                  onClick={() => setSelectedTeam('team2')}
                   disabled={isProcessing}
                 >
-                  Team B
+                  {team2Name}
                 </Button>
               </div>
             </div>
