@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 23,
+  "projectStateVersion": 25,
   "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
   "architectural_notes": [
     "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
@@ -20,7 +20,8 @@
     "Viewers cannot currently hear broadcaster audio (stream likely missing or not sending microphone audio track reliably).",
     "Viewers see a black screen (video not rendering/received) when broadcaster is live.",
     "Subtitles are being generated from the viewer’s own microphone instead of the broadcaster’s mic audio.",
-    "Broadcaster pre-live team selection is not being recognized at stream start (shows \"need to select teams\" error even after selecting both teams)."
+    "Broadcaster pre-live team selection is not being recognized at stream start (shows \"need to select teams\" error even after selecting both teams).",
+    "Starting the broadcast (going live) on Chrome refreshes the page with no error message; broadcast does not start even after successful pre-live team selection and with camera/mic permissions allowed."
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -359,6 +360,22 @@
         "REQ-46"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-broadcaster-start-flow-so-clicking-start-broadcast-does-not-refresh-the-page-and-instead-reliably-transitions-into-the-live-broadcaster-ui-state-when-the-backend-calls-succeed",
+      "title": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-clear-user-facing-error-feedback-on-the-broadcaster-start-card-when-starting-the-session-fails-e-g-backend-trap-or-network-error-using-english-messaging-and-without-leaving-the-user-on-an-unchanged-screen",
+      "title": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -524,6 +541,22 @@
       "id": "AR-35",
       "summary": "Move subtitles/captions overlay to the top of the video (inside video) for both broadcaster preview and viewer watch views",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
+      "reqIds": [
+        "REQ-48"
+      ],
       "status": "pending"
     }
   ],

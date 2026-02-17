@@ -8,9 +8,9 @@ import Order "mo:core/Order";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
 import Bool "mo:core/Bool";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   type TeamIcon = {
     #dolphin;
@@ -177,7 +177,18 @@ actor {
       Runtime.trap("Please use addFlagEvent for flag events");
     };
 
-    session.events.add(newEvent);
+    let updatedSession : Session = {
+      broadcaster = session.broadcaster;
+      startTime = session.startTime;
+      endTime = session.endTime;
+      events = session.events.clone();
+      scoreboard = session.scoreboard;
+      teamIconsChosen = session.teamIconsChosen;
+      captions = session.captions;
+    };
+
+    updatedSession.events.add(newEvent);
+    sessions.add(sessionCode, updatedSession);
   };
 
   public query ({ caller }) func getEvents(sessionCode : Text) : async [Event] {
@@ -251,7 +262,18 @@ actor {
       flagEvent = ?flagEvent;
     };
 
-    session.events.add(newEvent);
+    let updatedSession : Session = {
+      broadcaster = session.broadcaster;
+      startTime = session.startTime;
+      endTime = session.endTime;
+      events = session.events.clone();
+      scoreboard = session.scoreboard;
+      teamIconsChosen = session.teamIconsChosen;
+      captions = session.captions;
+    };
+
+    updatedSession.events.add(newEvent);
+    sessions.add(sessionCode, updatedSession);
   };
 
   // New endpoints for captions (subtitles from broadcaster)
@@ -265,7 +287,18 @@ actor {
       sessionCode;
     };
 
-    session.captions.add(caption);
+    let updatedSession : Session = {
+      broadcaster = session.broadcaster;
+      startTime = session.startTime;
+      endTime = session.endTime;
+      events = session.events;
+      scoreboard = session.scoreboard;
+      teamIconsChosen = session.teamIconsChosen;
+      captions = session.captions.clone();
+    };
+
+    updatedSession.captions.add(caption);
+    sessions.add(sessionCode, updatedSession);
   };
 
   public query ({ caller }) func getLatestCaption(sessionCode : Text) : async ?Caption {

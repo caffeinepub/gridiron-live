@@ -1,38 +1,42 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T23:02:04.686Z",
-  "summary": "Diff updates broadcaster live UI to pass fetched scoreboard state into Game Controls and to derive team names from scoreboard icons, with loading/disabled behavior tied to scoreboard query state. However, the diff summary also indicates several unrelated broadcaster enhancements beyond the requested UI bug fix scope.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-02-17T23:15:38.637Z",
+  "summary": "Backend changes appear to attempt storing sessions and persisting updates by writing updated Session records back to a sessions map, and the frontend adds a 'starting' state and error handling for the broadcaster start flow. However, based on the diff summary, key backend persistence/mutation requirements cannot be confirmed (and may still be incorrect depending on Map semantics), and an unneeded migration file was added.",
+  "missing_requirements": [
     {
-      "description": "Added/modified broadcaster-side caption generation/publishing and caption polling behavior.",
-      "reason": "Not requested by REQ-45/REQ-46; BuildRequest is specifically about post-live team selection recognition and passing scoreboard state into the Flag dialog.",
+      "id": "REQ-47",
+      "requirement": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
+      "reason": "The sessions store is declared as an immutable `let sessions = Map.empty<Text, Session>()` and the code calls `sessions.add(...)` without any reassignment. If `mo:core/Map` is a persistent/functional map (common for Map modules), these `add` calls would return a new map rather than mutating in place, meaning the session would not actually be stored and `isValidSessionCode`/`getSessionOrTrap` could still fail. The diff summary does not show any `var` map or reassignment that would guarantee persistence.",
       "evidence": [
-        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"broadcaster-side speech recognition for caption generation\" and \"caption publishing to backend\" and viewer caption polling)",
-        "frontend/src/pages/BroadcasterPage.tsx (imports/use of useSpeechRecognition, usePublishCaption shown in snippet)"
+        "backend/main.mo"
       ]
     },
     {
-      "description": "WebRTC peer connection preparation / signaling-related scaffolding changes on BroadcasterPage.",
-      "reason": "Not requested; BuildRequest explicitly limits scope to fixing incorrect post-start team selection behavior and does not request streaming/signaling changes.",
+      "id": "REQ-48",
+      "requirement": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
+      "reason": "The diff shows updated write-back logic for `setTeamIcons`/`endSession`, but the key functions in the requirement/AC (`addFlagEvent`, `addCaption`, and general event mutation) are in the truncated portion (`public shared ... func addEvent(sessionC ... [truncated]`). Because those implementations are not visible in the provided diff summary, it cannot be verified that they avoid in-place mutation and persist updates by writing updated Session records back into the sessions store.",
       "evidence": [
-        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"WebRTC peer connection preparation for when backend signaling is available\")",
-        "frontend/src/pages/BroadcasterPage.tsx (shows peerConnectionsRef = useRef<Map<string, RTCPeerConnection>>...)"
-      ]
-    },
-    {
-      "description": "UI changes like moving transcript overlay to the top of video containers and broader mic/audio track management changes.",
-      "reason": "Not requested by REQ-45/REQ-46; these are broader UX/behavior changes beyond the team-selection/scoreboard-prop bug fix.",
-      "evidence": [
-        "frontend-file-summaries.txt (BroadcasterPage.tsx description mentions \"transcript overlay moved to top of video\" and \"stable audio track management\" and \"mic toggle with proper track enable/disable\")"
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.66,
+  "hallucinated_features": [
+    {
+      "description": "Added a backend migration module and wired it into the main actor upgrade path.",
+      "reason": "The BuildRequest explicitly constrained migrations to only be added if an upgrade requires preserving existing stable state; otherwise do not add a migration. The diff adds `backend/migration.mo` (a no-op `run`) and imports/uses it in `backend/main.mo` despite no stated need in the request.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo"
+      ]
+    }
+  ],
+  "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/broadcast/FootballControlPanel.tsx",
+    "frontend/src/hooks/useBroadcasterSession.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
     "project_state.json"
   ]

@@ -1,47 +1,47 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Broadcaster live UI: recognize pre-live team selection and fix Flag/Game Controls readiness",
+  "title": "Fix broadcaster start flow to avoid page refresh and show errors",
   "requirements": [
     {
-      "id": "REQ-45",
-      "summary": "Ensure the broadcaster live page uses fetched scoreboard state (with team icons) to clear any post-start 'select teams' messaging and enable Game Controls once available.",
+      "id": "REQ-49",
+      "summary": "Prevent full page reload on Start Broadcast and reliably transition into LIVE broadcaster UI after successful start.",
       "acceptanceCriteria": [
-        "After selecting Team A and Team B on the broadcaster start screen and starting the broadcast, the broadcaster live page does not show any persistent message/tooltip indicating teams still need to be selected.",
-        "The Game Controls panel (Flag) is enabled once the scoreboard data is available, and the UI uses the current team names derived from the selected team icons (Titans/Twisters/Bullfrogs/Dolphins) instead of generic Team A/Team B.",
-        "If scoreboard data is still loading right after the session starts, any temporary disabled/loading state clears automatically once the scoreboard query resolves (no manual refresh required)."
+        "On Chrome, clicking \"Start Broadcast\" does not cause a full page reload.",
+        "When startSession + setTeamIcons succeed, the broadcaster page switches from the start card to the LIVE camera preview UI and shows a session code card.",
+        "The Start Broadcast button shows a disabled/loading state while the start is in progress (status === 'starting'), preventing duplicate submissions."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Pass the fetched scoreboard into the Game Controls panel and drive the panel disabled/loading state from the scoreboard query state (instead of treating missing props as 'teams not selected'). Ensure the UI transitions automatically from temporary 'loading/disabled' to enabled once the scoreboard query resolves."
+          "description": "Update the start card to use a submit-safe handler (e.g., form onSubmit + preventDefault, and/or explicitly set the Start Broadcast button type) so Start Broadcast never triggers a browser navigation/reload; wire the UI to the existing useBroadcasterSession status ('starting'/'live') so success transitions into the existing LIVE preview + SessionCodeCard state. Use the selected camera component hook (camera/useCamera) to ensure the live state always shows a stable, non-collapsing camera preview area while the camera initializes. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "path": "frontend/src/hooks/useBroadcasterSession.ts",
           "operation": "modify",
-          "description": "Update the Flag button tooltip/helper text so that when scoreboard is temporarily unavailable right after going live it indicates a loading/initializing state (not 'select team icons'), and ensure the message disappears as soon as scoreboard data is present."
+          "description": "Harden session start state handling to prevent duplicate in-flight starts (keep status as 'starting' until completion) and ensure the hook reliably resolves to 'live' only after startSession + setTeamIcons succeed, enabling the page to render the LIVE broadcaster UI without needing a refresh."
         }
       ]
     },
     {
-      "id": "REQ-46",
-      "summary": "Wire current scoreboard state into the Flag dialog so team labels and readiness are driven by actual scoreboard data and not undefined/omitted props.",
+      "id": "REQ-50",
+      "summary": "Show clear English error feedback on the broadcaster start card when starting the broadcast fails and allow retry.",
       "acceptanceCriteria": [
-        "When broadcasting is live, opening the Flag dialog shows the two team buttons labeled with the mapped names from the current scoreboard icons (not generic placeholders).",
-        "The Flag button is not permanently blocked solely due to the scoreboard prop being omitted; the blocked/disabled logic reflects the actual presence of fetched scoreboard data.",
-        "Submitting a flag event works immediately after going live (once scoreboard is loaded), without requiring re-selecting teams."
+        "If startSession or setTeamIcons fails, the broadcaster start card renders a visible error message in English (e.g., \"Could not start the broadcast. Please try again.\").",
+        "On failure, the UI remains on the start screen and the Start Broadcast button becomes clickable again after the attempt completes.",
+        "The error message does not require opening the browser console to understand what happened."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Ensure FootballControlPanel receives a non-undefined scoreboard prop sourced from the live scoreboard query, so the Flag dialog has access to current icon-based team identity as soon as the query returns."
+          "description": "Add local error state for the start flow; when the start attempt throws (backend trap/network), render a prominent English error message inside the start card (near the Start Broadcast button and/or top of the card), and reset/clear the error on new attempts or input changes. Ensure the Start Broadcast button returns to enabled when status goes back to 'idle' after a failure."
         },
         {
-          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "path": "frontend/src/hooks/useBroadcasterSession.ts",
           "operation": "modify",
-          "description": "Make Flag dialog team button labels strictly derived from the provided scoreboard icons via existing team icon mapping, and align disabled/blocked logic to reflect actual scoreboard presence (avoid treating missing props as a permanent 'teams not selected' state)."
+          "description": "Optionally expose a start failure reason (or standardized error) from the hook so BroadcasterPage can display a consistent user-facing message while keeping detailed logging out of the UI."
         }
       ]
     }

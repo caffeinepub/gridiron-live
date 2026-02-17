@@ -32,6 +32,7 @@ export default function BroadcasterPage() {
   const [selectedTeam2Icon, setSelectedTeam2Icon] = useState<TeamIcon | null>(null);
   const [micEnabled, setMicEnabled] = useState(true);
   const [captionsEnabled, setCaptionsEnabled] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
   const { status, sessionCode, startSession, endSession, isLive, isIdle } = useBroadcasterSession();
   const { data: events = [] } = useGetEvents(sessionCode || undefined);
   const { data: scoreboard, isLoading: scoreboardLoading } = useGetScoreboard(sessionCode || undefined);
@@ -177,14 +178,23 @@ export default function BroadcasterPage() {
     publishCaptionMutation.mutate({ sessionCode, text: transcript });
   }, [transcript, sessionCode, publishCaptionMutation]);
 
-  const handleStartBroadcast = async () => {
+  const handleStartBroadcast = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
     if (!broadcasterName.trim() || !selectedTeam1Icon || !selectedTeam2Icon) return;
+    
+    // Clear any previous error
+    setStartError(null);
+    
     try {
       await startSession(broadcasterName.trim(), selectedTeam1Icon, selectedTeam2Icon);
       // Enable captions by default
       setCaptionsEnabled(true);
     } catch (error) {
       console.error('Failed to start broadcast:', error);
+      setStartError('Could not start the broadcast. Please try again.');
     }
   };
 
@@ -217,12 +227,30 @@ export default function BroadcasterPage() {
     return await retryCamera();
   };
 
+  // Clear error when user changes input
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setBroadcasterName(e.target.value);
+    if (startError) setStartError(null);
+  };
+
+  const handleTeam1Change = (icon: TeamIcon) => {
+    setSelectedTeam1Icon(icon);
+    if (startError) setStartError(null);
+  };
+
+  const handleTeam2Change = (icon: TeamIcon) => {
+    setSelectedTeam2Icon(icon);
+    if (startError) setStartError(null);
+  };
+
   const canStartBroadcast = 
     broadcasterName.trim() && 
     selectedTeam1Icon && 
     selectedTeam2Icon && 
     selectedTeam1Icon !== selectedTeam2Icon &&
     status !== 'starting';
+
+  const isStarting = status === 'starting';
 
   if (cameraSupported === false) {
     return (
@@ -246,94 +274,117 @@ export default function BroadcasterPage() {
           <CardHeader>
             <CardTitle className="text-2xl scoreboard-text">Start Broadcasting</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="broadcaster-name">Your Name</Label>
-              <Input
-                id="broadcaster-name"
-                placeholder="Enter your name"
-                value={broadcasterName}
-                onChange={(e) => setBroadcasterName(e.target.value)}
-              />
-            </div>
+          <CardContent>
+            <form onSubmit={handleStartBroadcast} className="space-y-6">
+              {startError && (
+                <div className="p-4 bg-destructive/10 border border-destructive/50 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-medium text-destructive">{startError}</p>
+                  </div>
+                </div>
+              )}
 
-            <div className="space-y-3">
-              <Label>Team A</Label>
-              <div className="grid grid-cols-4 gap-3">
-                {TEAM_ICONS.map((icon) => {
-                  const isSelected = selectedTeam1Icon === icon.value;
-                  const isDisabled = selectedTeam2Icon === icon.value;
-                  return (
-                    <button
-                      key={icon.value}
-                      onClick={() => setSelectedTeam1Icon(icon.value)}
-                      disabled={isDisabled}
-                      className={`
-                        relative p-3 rounded-lg border-2 transition-all
-                        ${isSelected ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'border-border hover:border-primary/50'}
-                        ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                      `}
-                    >
-                      <img
-                        src={icon.imagePath}
-                        alt={icon.alt}
-                        className="w-full h-full object-contain"
-                      />
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap">
-                        {icon.label}
-                      </span>
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <Label htmlFor="broadcaster-name">Your Name</Label>
+                <Input
+                  id="broadcaster-name"
+                  placeholder="Enter your name"
+                  value={broadcasterName}
+                  onChange={handleNameChange}
+                  disabled={isStarting}
+                />
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <Label>Team B</Label>
-              <div className="grid grid-cols-4 gap-3">
-                {TEAM_ICONS.map((icon) => {
-                  const isSelected = selectedTeam2Icon === icon.value;
-                  const isDisabled = selectedTeam1Icon === icon.value;
-                  return (
-                    <button
-                      key={icon.value}
-                      onClick={() => setSelectedTeam2Icon(icon.value)}
-                      disabled={isDisabled}
-                      className={`
-                        relative p-3 rounded-lg border-2 transition-all
-                        ${isSelected ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'border-border hover:border-primary/50'}
-                        ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                      `}
-                    >
-                      <img
-                        src={icon.imagePath}
-                        alt={icon.alt}
-                        className="w-full h-full object-contain"
-                      />
-                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap">
-                        {icon.label}
-                      </span>
-                    </button>
-                  );
-                })}
+              <div className="space-y-3">
+                <Label>Team A</Label>
+                <div className="grid grid-cols-4 gap-3">
+                  {TEAM_ICONS.map((icon) => {
+                    const isSelected = selectedTeam1Icon === icon.value;
+                    const isDisabled = selectedTeam2Icon === icon.value || isStarting;
+                    return (
+                      <button
+                        key={icon.value}
+                        type="button"
+                        onClick={() => handleTeam1Change(icon.value)}
+                        disabled={isDisabled}
+                        className={`
+                          relative p-3 rounded-lg border-2 transition-all
+                          ${isSelected ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'border-border hover:border-primary/50'}
+                          ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                      >
+                        <img
+                          src={icon.imagePath}
+                          alt={icon.alt}
+                          className="w-full h-full object-contain"
+                        />
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap">
+                          {icon.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {selectedTeam1Icon && selectedTeam2Icon && selectedTeam1Icon === selectedTeam2Icon && (
-              <p className="text-sm text-destructive text-center">
-                Team A and Team B must have different icons
-              </p>
-            )}
+              <div className="space-y-3">
+                <Label>Team B</Label>
+                <div className="grid grid-cols-4 gap-3">
+                  {TEAM_ICONS.map((icon) => {
+                    const isSelected = selectedTeam2Icon === icon.value;
+                    const isDisabled = selectedTeam1Icon === icon.value || isStarting;
+                    return (
+                      <button
+                        key={icon.value}
+                        type="button"
+                        onClick={() => handleTeam2Change(icon.value)}
+                        disabled={isDisabled}
+                        className={`
+                          relative p-3 rounded-lg border-2 transition-all
+                          ${isSelected ? 'border-primary bg-primary/10 ring-2 ring-primary' : 'border-border hover:border-primary/50'}
+                          ${isDisabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                      >
+                        <img
+                          src={icon.imagePath}
+                          alt={icon.alt}
+                          className="w-full h-full object-contain"
+                        />
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium whitespace-nowrap">
+                          {icon.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={handleStartBroadcast}
-              disabled={!canStartBroadcast}
-            >
-              <Video className="mr-2 h-5 w-5" />
-              Start Broadcast
-            </Button>
+              {selectedTeam1Icon && selectedTeam2Icon && selectedTeam1Icon === selectedTeam2Icon && (
+                <p className="text-sm text-destructive text-center">
+                  Team A and Team B must have different icons
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full"
+                disabled={!canStartBroadcast}
+              >
+                {isStarting ? (
+                  <>
+                    <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Starting...
+                  </>
+                ) : (
+                  <>
+                    <Video className="mr-2 h-5 w-5" />
+                    Start Broadcast
+                  </>
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       )}

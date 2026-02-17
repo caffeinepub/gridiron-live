@@ -22,32 +22,48 @@ export function useBroadcasterSession() {
 
   const startSession = useCallback(
     async (broadcasterName: string, team1Icon: TeamIcon, team2Icon: TeamIcon) => {
+      // Prevent duplicate starts
+      if (status === 'starting') {
+        return;
+      }
+
       setStatus('starting');
       const code = generateSessionCode();
+      
       try {
         await startSessionMutation.mutateAsync({
           broadcaster: broadcasterName,
           sessionCode: code,
         });
+        
         await setTeamIconsMutation.mutateAsync({
           sessionCode: code,
           team1Icon,
           team2Icon,
         });
+        
         setSessionCode(code);
         setStatus('live');
         return code;
       } catch (error) {
         console.error('Failed to start session:', error);
+        // Reset to idle on failure so user can retry
         setStatus('idle');
+        setSessionCode(null);
         throw error;
       }
     },
-    [startSessionMutation, setTeamIconsMutation, generateSessionCode]
+    [status, startSessionMutation, setTeamIconsMutation, generateSessionCode]
   );
 
   const endSession = useCallback(async () => {
     if (!sessionCode) return;
+    
+    // Prevent duplicate end calls
+    if (status === 'ending' || status === 'ended') {
+      return;
+    }
+
     setStatus('ending');
     try {
       await endSessionMutation.mutateAsync(sessionCode);
@@ -57,7 +73,7 @@ export function useBroadcasterSession() {
       setStatus('live');
       throw error;
     }
-  }, [sessionCode, endSessionMutation]);
+  }, [sessionCode, status, endSessionMutation]);
 
   return {
     status,

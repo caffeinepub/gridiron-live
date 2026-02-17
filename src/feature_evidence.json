@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-broadcaster-live-ui-so-it-correctly-recognizes-that-team-a-and-team-b-were-selected-during-the-pre-live-setup-and-does-not-continue-showing-messaging-that-teams-must-be-selected-after-the-broadcast-starts",
-      "featureTitle": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
+      "featureId": "feature-update-the-frontend-broadcaster-start-flow-so-clicking-start-broadcast-does-not-refresh-the-page-and-instead-reliably-transitions-into-the-live-broadcaster-ui-state-when-the-backend-calls-succeed",
+      "featureTitle": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
       "files": [
-        "frontend/src/components/broadcast/FootballControlPanel.tsx",
+        "frontend/src/hooks/useBroadcasterSession.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -17,15 +17,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-45"
+        "REQ-49"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-ensure-the-broadcaster-game-controls-flag-dialog-receives-the-current-scoreboard-state-from-the-broadcaster-page-so-that-team-selection-readiness-and-team-naming-are-driven-by-backend-scoreboard-data-rather-than-missing-undefined-props",
-      "featureTitle": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
+      "featureId": "feature-add-clear-user-facing-error-feedback-on-the-broadcaster-start-card-when-starting-the-session-fails-e-g-backend-trap-or-network-error-using-english-messaging-and-without-leaving-the-user-on-an-unchanged-screen",
+      "featureTitle": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
       "files": [
-        "frontend/src/components/broadcast/FootballControlPanel.tsx",
+        "frontend/src/hooks/useBroadcasterSession.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -37,7 +37,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-46"
+        "REQ-50"
       ],
       "confidence": "high"
     }

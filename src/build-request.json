@@ -1,79 +1,95 @@
 {
   "kind": "build_request",
-  "title": "Fix broadcaster pre-live team selection not recognized after going live",
-  "projectName": "VillanSpoon Live",
+  "title": "Fix broadcaster start (go live) refresh with no session created",
+  "projectName": "Gridiron Live",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-45",
-      "text": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
-      "target": "frontend",
+      "id": "REQ-47",
+      "text": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7",
-          "msg-10",
-          "msg-14"
+          "msg-1"
         ],
         "quotes": [
-          "ever since i made it so you choose the teams before you start the brodcast it says i need to select teams to do it even tho i did",
-          "yes yes when the stream starts",
-          "yes yes yes",
-          "go"
+          "it wont let me go live it just refreshs pls fix it"
         ]
       },
       "acceptanceCriteria": [
-        "After selecting Team A and Team B on the broadcaster start screen and starting the broadcast, the broadcaster live page does not show any persistent message/tooltip indicating teams still need to be selected.",
-        "The Game Controls panel (Flag) is enabled once the scoreboard data is available, and the UI uses the current team names derived from the selected team icons (Titans/Twisters/Bullfrogs/Dolphins) instead of generic Team A/Team B.",
-        "If scoreboard data is still loading right after the session starts, any temporary disabled/loading state clears automatically once the scoreboard query resolves (no manual refresh required)."
+        "After a successful startSession(broadcaster, sessionCode) call, isValidSessionCode(sessionCode) returns true.",
+        "Immediately after startSession, calling setTeamIcons(sessionCode, team1Icon, team2Icon) succeeds (does not trap with \"Session does not exist\").",
+        "getSessionMetadata(sessionCode) returns the broadcaster name and a non-null startTime after startSession."
       ]
     },
     {
-      "id": "REQ-46",
-      "text": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
-      "target": "frontend",
+      "id": "REQ-48",
+      "text": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7",
-          "msg-10",
-          "msg-14"
+          "msg-1"
         ],
         "quotes": [
-          "ever since i made it so you choose the teams before you start the brodcast it says i need to select teams to do it even tho i did",
-          "yes yes when the stream starts",
-          "yes yes yes",
-          "go"
+          "just fix the brodcasting"
         ]
       },
       "acceptanceCriteria": [
-        "When broadcasting is live, opening the Flag dialog shows the two team buttons labeled with the mapped names from the current scoreboard icons (not generic placeholders).",
-        "The Flag button is not permanently blocked solely due to the scoreboard prop being omitted; the blocked/disabled logic reflects the actual presence of fetched scoreboard data.",
-        "Submitting a flag event works immediately after going live (once scoreboard is loaded), without requiring re-selecting teams."
+        "After a session is started and team icons are set, addFlagEvent(sessionCode, team, reason) results in getEvents(sessionCode) including the new flag event.",
+        "After a session is started, addCaption(sessionCode, text) results in getLatestCaption(sessionCode) returning that caption.",
+        "No backend method relies on mutating immutable session fields in-place; instead, session updates are persisted by writing an updated Session back into the sessions store."
+      ]
+    },
+    {
+      "id": "REQ-49",
+      "text": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "1 nothing it just refreshes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On Chrome, clicking \"Start Broadcast\" does not cause a full page reload.",
+        "When startSession + setTeamIcons succeed, the broadcaster page switches from the start card to the LIVE camera preview UI and shows a session code card.",
+        "The Start Broadcast button shows a disabled/loading state while the start is in progress (status === 'starting'), preventing duplicate submissions."
+      ]
+    },
+    {
+      "id": "REQ-50",
+      "text": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "2 comepletely same"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If startSession or setTeamIcons fails, the broadcaster start card renders a visible error message in English (e.g., \"Could not start the broadcast. Please try again.\").",
+        "On failure, the UI remains on the start screen and the Start Broadcast button becomes clickable again after the attempt completes.",
+        "The error message does not require opening the browser console to understand what happened."
       ]
     }
   ],
   "constraints": [
-    "Frontend files under frontend/src/components/ui must not be edited directly; compose them as-is.",
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services."
+    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
+    "Only create backend/migration.mo if an upgrade requires preserving existing stable state; otherwise, do not add a migration.",
+    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT.",
+    "Use English for all user-facing text."
   ],
   "nonGoals": [
-    "Changing the team icon restriction list (must remain exactly: dolphin, bullfrog, fist, tornado).",
-    "Redesigning the broadcaster start flow beyond fixing the incorrect post-start 'select teams' behavior.",
-    "Adding new backend endpoints or changing backend schema/state solely for this UI bug fix."
+    "Do not add new features beyond fixing the go-live/start broadcast refresh behavior and making the start failure visible to the user.",
+    "Do not change the overall football-themed UI styling beyond what is needed to display errors/loading states.",
+    "Do not add third-party services (streaming, databases, auth providers beyond Internet Identity)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

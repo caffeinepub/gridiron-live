@@ -1,49 +1,65 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T23:02:04.689Z",
+  "generatedAt": "2026-02-17T23:15:38.640Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
+    "total": 4,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-45",
-        "summary": "Fix the broadcaster live UI so it correctly recognizes that Team A and Team B were selected during the pre-live setup and does not continue showing messaging that teams must be selected after the broadcast starts.",
+        "id": "REQ-47",
+        "summary": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-48",
+        "summary": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-49",
+        "summary": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+          "frontend/src/hooks/useBroadcasterSession.ts"
         ],
         "matchedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+          "frontend/src/hooks/useBroadcasterSession.ts"
         ]
       },
       {
-        "id": "REQ-46",
-        "summary": "Ensure the broadcaster Game Controls (Flag dialog) receives the current scoreboard state from the broadcaster page so that team selection readiness and team naming are driven by backend scoreboard data rather than missing/undefined props.",
+        "id": "REQ-50",
+        "summary": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+          "frontend/src/hooks/useBroadcasterSession.ts"
         ],
         "matchedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+          "frontend/src/hooks/useBroadcasterSession.ts"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/broadcast/FootballControlPanel.tsx",
+    "frontend/src/hooks/useBroadcasterSession.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
