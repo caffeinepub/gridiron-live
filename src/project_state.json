@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Website for live streaming from a single authorized broadcaster to viewers with code-based access (fixed session code), featuring a football-themed UI with real-time game/event controls plus an on-camera (over-video) bottom scoreboard overlay on both broadcaster and viewer views, including team icons/scores and a small \"VillanSpoon\" label in the scoreboard corner.",
+  "architectural_notes": [
+    "Add a 'single-broadcaster' rule: only the owner can create/start the live session; viewers are view-only.",
+    "Support a fixed session code ('pinedo') for the primary broadcast flow (no code generation needed for this mode).",
+    "Render scoreboard UI as an overlay on the video element/stream (bottom of camera) for both broadcaster preview and viewer playback; remove the separate bottom-of-screen scorebar UI.",
+    "Flag events should render as a temporary on-video overlay (team + reason) visible to both broadcaster and viewers.",
+    "Score updates should be set via manual entry controls (no +1 point button) and persisted so viewers see updates."
+  ],
+  "known_issues": [
+    "Previous build attempt failed with: \"AI was unable to complete your request.\""
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-football-themed-ui-and-layout-used-consistently-across-the-app-colors-typography-spacing-and-components-with-a-distinct-style-appropriate-for-a-live-football-broadcast-control-room",
+      "title": "Create a football-themed UI and layout used consistently across the app (colors, typography, spacing, and components) with a distinct style appropriate for a live football broadcast control room.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-viewer-access-gate-where-viewers-must-enter-a-valid-session-code-before-they-can-watch-a-live-broadcast",
+      "title": "Implement a viewer access gate where viewers must enter a valid session code before they can watch a live broadcast.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-broadcaster-mobile-friendly-page-that-can-capture-live-video-audio-from-the-phone-camera-microphone-and-start-stop-a-live-session-associated-with-a-shareable-session-code",
+      "title": "Implement a broadcaster (mobile-friendly) page that can capture live video/audio from the phone camera/microphone and start/stop a live session associated with a shareable session code.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-live-streaming-delivery-from-broadcaster-to-viewers-using-an-in-browser-real-time-protocol-with-backend-assisted-session-signaling-and-state-no-third-party-streaming-providers",
+      "title": "Implement live streaming delivery from broadcaster to viewers using an in-browser real-time protocol with backend-assisted session signaling and state (no third-party streaming providers).",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-football-control-panel-for-the-broadcaster-with-clearly-labeled-buttons-for-common-game-events-at-minimum-flag-and-point-score-and-publish-these-events-to-viewers-in-real-time-e-g-as-an-on-screen-overlay-and-or-an-event-feed",
+      "title": "Add a football control panel for the broadcaster with clearly labeled buttons for common game events (at minimum: Flag and Point/Score), and publish these events to viewers in real time (e.g., as an on-screen overlay and/or an event feed).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-frontend-pages-and-navigation-for-1-broadcaster-mode-and-2-viewer-mode-optimized-for-mobile-use-on-the-broadcaster-side-and-simple-viewing-on-the-viewer-side",
+      "title": "Create frontend pages and navigation for (1) Broadcaster mode and (2) Viewer mode, optimized for mobile use on the broadcaster side and simple viewing on the viewer side.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-safety-validation-states-missing-permissions-unsupported-browser-features-and-session-lifecycle-states-not-started-live-ended",
+      "title": "Add basic safety/validation states: missing permissions, unsupported browser features, and session lifecycle states (not started, live, ended).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-generated-image-assets-football-themed-background-and-simple-ui-icons-from-static-files-under-frontend-public-assets-generated-and-use-them-in-the-ui",
+      "title": "Render generated image assets (football-themed background and simple UI icons) from static files under frontend/public/assets/generated and use them in the UI.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-render-a-fixed-bottom-of-screen-scorebar-on-the-viewer-watch-page-that-displays-both-teams-selected-icons-and-current-scores-and-ensure-it-remains-visible-while-watching-sticky-footer-style-overlay-that-does-not-block-core-controls",
+      "title": "Render a fixed bottom-of-screen scorebar on the Viewer Watch page that displays both teams’ selected icons and current scores, and ensure it remains visible while watching (sticky footer-style overlay that does not block core controls).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-broadcaster-ui-controls-to-set-each-team-s-icon-restricted-to-exactly-dolphin-bullfrog-fist-tornado-and-to-adjust-each-team-s-score-during-a-live-session-persist-changes-to-the-backend-so-viewers-see-updates",
+      "title": "Add broadcaster UI controls to set each team’s icon (restricted to exactly: dolphin, bullfrog, fist, tornado) and to adjust each team’s score during a live session; persist changes to the backend so viewers see updates.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-use-generated-static-image-assets-for-the-four-allowed-team-icons-and-display-them-in-the-icon-selection-ui-and-in-the-bottom-scorebar",
+      "title": "Use generated static image assets for the four allowed team icons and display them in the icon selection UI and in the bottom scorebar.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-viewer-watch-page-s-fixed-bottom-of-screen-scorebar-with-an-on-camera-over-video-bottom-scoreboard-overlay-rendered-inside-the-video-container-visible-while-watching",
+      "title": "Replace the Viewer Watch page’s fixed bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay rendered inside the video container, visible while watching.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-the-text-label-villanspoon-in-the-left-corner-of-the-on-camera-scoreboard-overlay-on-both-the-broadcaster-camera-preview-and-the-viewer-stream-view",
+      "title": "Add the text label \"VillanSpoon\" in the left corner of the on-camera scoreboard overlay on BOTH the broadcaster camera preview and the viewer stream view.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-change-broadcaster-score-editing-to-manual-score-entry-no-buttons-while-keeping-live-updating-custom-scores-persisted-to-the-backend",
+      "title": "Change broadcaster score editing to manual score entry (no +/− buttons) while keeping live-updating custom scores persisted to the backend.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-score-point-button-from-the-broadcaster-game-controls-so-the-broadcaster-cannot-add-a-point-score-event-via-that-button",
+      "title": "Remove the \"Score\" / point button from the broadcaster game controls so the broadcaster cannot add a point/score event via that button.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-broadcaster-flag-control-to-require-selecting-which-team-the-flag-applies-to-and-entering-a-reason-then-publish-that-flag-announcement-so-it-appears-as-an-on-camera-overlay-over-the-video-visible-to-both-broadcaster-and-viewers",
+      "title": "Update the broadcaster \"Flag\" control to require selecting which team the flag applies to and entering a reason, then publish that flag announcement so it appears as an on-camera overlay over the video (visible to both broadcaster and viewers).",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-viewer-s-latest-event-presentation-is-on-camera-over-video-rather-than-a-separate-card-below-the-video-when-an-event-arrives-especially-flags",
+      "title": "Ensure the viewer’s latest-event presentation is on-camera (over-video) rather than a separate card below the video when an event arrives (especially flags).",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Mobile live video capture and streaming to a web audience",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Viewer access control via entry code (only users with a code can watch)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Football-themed UI with event buttons to record game actions (e.g., flags, points)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Persist session metadata and event logs in the backend so that viewers who join mid-stream can immediately see the current session state and recent events after joining with the code.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Support a single shared broadcast/session with a fixed viewer access code (“pinedo”)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Restrict broadcasting to the owner/only one broadcaster can start the session",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Allow selecting team icons only from a limited set (dolphin, bullfrog, fist, tornado)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add persistent per-session scoreboard state that includes (a) two team scores and (b) each team’s selected icon, and expose backend methods to update and fetch this scoreboard state by session code.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Replace the bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay visible to both broadcaster and viewers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Change score controls to manual score entry (remove the +1 point button) while keeping live-updating custom scores",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Show flag announcements (team + reason) as an overlay on top of the video (on-camera), visible to both broadcaster and viewers",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add a \"VillanSpoon\" label/watermark in the left corner of the scoreboard overlay (both broadcaster and viewer)",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Gridiron Live",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

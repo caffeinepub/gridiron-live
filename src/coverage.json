@@ -1,0 +1,127 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-17T21:20:00.037Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 6,
+    "implemented": 6,
+    "items": [
+      {
+        "id": "REQ-14",
+        "summary": "Replace the Viewer Watch page’s fixed bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay rendered inside the video container, visible while watching.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+        ]
+      },
+      {
+        "id": "REQ-15",
+        "summary": "Add the text label \"VillanSpoon\" in the left corner of the on-camera scoreboard overlay on BOTH the broadcaster camera preview and the viewer stream view.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-16",
+        "summary": "Change broadcaster score editing to manual score entry (no +/− buttons) while keeping live-updating custom scores persisted to the backend.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/broadcast/ScoreboardControls.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/broadcast/ScoreboardControls.tsx"
+        ]
+      },
+      {
+        "id": "REQ-17",
+        "summary": "Remove the \"Score\" / point button from the broadcaster game controls so the broadcaster cannot add a point/score event via that button.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+        ]
+      },
+      {
+        "id": "REQ-18",
+        "summary": "Update the broadcaster \"Flag\" control to require selecting which team the flag applies to and entering a reason, then publish that flag announcement so it appears as an on-camera overlay over the video (visible to both broadcaster and viewers).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
+          "frontend/src/pages/BroadcasterPage.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Ensure the viewer’s latest-event presentation is on-camera (over-video) rather than a separate card below the video when an event arrives (especially flags).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/events/LatestEventOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/events/LatestEventOverlay.tsx",
+          "frontend/src/pages/ViewerWatchPage.tsx",
+          "frontend/src/components/viewer/ViewerVideoPlayer.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/broadcast/FootballControlPanel.tsx",
+    "frontend/src/components/broadcast/ScoreboardControls.tsx",
+    "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
+    "frontend/src/components/events/LatestEventOverlay.tsx",
+    "frontend/src/components/scoreboard/BottomScorebar.tsx",
+    "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+    "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/BroadcasterPage.tsx",
+    "frontend/src/pages/ViewerWatchPage.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

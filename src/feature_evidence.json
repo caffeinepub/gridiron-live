@@ -1,0 +1,129 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-replace-the-viewer-watch-page-s-fixed-bottom-of-screen-scorebar-with-an-on-camera-over-video-bottom-scoreboard-overlay-rendered-inside-the-video-container-visible-while-watching",
+      "featureTitle": "Replace the Viewer Watch page’s fixed bottom-of-screen scorebar with an on-camera (over-video) bottom scoreboard overlay rendered inside the video container, visible while watching.",
+      "files": [
+        "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+        "frontend/src/pages/ViewerWatchPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-14"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-the-text-label-villanspoon-in-the-left-corner-of-the-on-camera-scoreboard-overlay-on-both-the-broadcaster-camera-preview-and-the-viewer-stream-view",
+      "featureTitle": "Add the text label \"VillanSpoon\" in the left corner of the on-camera scoreboard overlay on BOTH the broadcaster camera preview and the viewer stream view.",
+      "files": [
+        "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+        "frontend/src/pages/BroadcasterPage.tsx",
+        "frontend/src/pages/ViewerWatchPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-15"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-change-broadcaster-score-editing-to-manual-score-entry-no-buttons-while-keeping-live-updating-custom-scores-persisted-to-the-backend",
+      "featureTitle": "Change broadcaster score editing to manual score entry (no +/− buttons) while keeping live-updating custom scores persisted to the backend.",
+      "files": [
+        "frontend/src/components/broadcast/ScoreboardControls.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-16"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-the-score-point-button-from-the-broadcaster-game-controls-so-the-broadcaster-cannot-add-a-point-score-event-via-that-button",
+      "featureTitle": "Remove the \"Score\" / point button from the broadcaster game controls so the broadcaster cannot add a point/score event via that button.",
+      "files": [
+        "frontend/src/components/broadcast/FootballControlPanel.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-17"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-the-broadcaster-flag-control-to-require-selecting-which-team-the-flag-applies-to-and-entering-a-reason-then-publish-that-flag-announcement-so-it-appears-as-an-on-camera-overlay-over-the-video-visible-to-both-broadcaster-and-viewers",
+      "featureTitle": "Update the broadcaster \"Flag\" control to require selecting which team the flag applies to and entering a reason, then publish that flag announcement so it appears as an on-camera overlay over the video (visible to both broadcaster and viewers).",
+      "files": [
+        "frontend/src/components/broadcast/FootballControlPanel.tsx",
+        "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/BroadcasterPage.tsx",
+        "frontend/src/pages/ViewerWatchPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-18"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-the-viewer-s-latest-event-presentation-is-on-camera-over-video-rather-than-a-separate-card-below-the-video-when-an-event-arrives-especially-flags",
+      "featureTitle": "Ensure the viewer’s latest-event presentation is on-camera (over-video) rather than a separate card below the video when an event arrives (especially flags).",
+      "files": [
+        "frontend/src/components/events/LatestEventOverlay.tsx",
+        "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+        "frontend/src/pages/ViewerWatchPage.tsx"
+      ],
+      "components": [
+        "camera@1.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-19"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

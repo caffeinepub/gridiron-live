@@ -1,0 +1,153 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "On-camera scoreboard + flag overlays, manual score entry, and remove point button",
+  "requirements": [
+    {
+      "id": "REQ-14",
+      "summary": "Move viewer scoreboard from fixed bottom bar to an on-camera overlay inside the video container that live-updates from the backend scoreboard.",
+      "acceptanceCriteria": [
+        "On the viewer watch page, the fixed/sticky BottomScorebar UI is no longer shown at the bottom of the screen.",
+        "A scoreboard overlay is rendered on top of the video area and anchored to the bottom of the video frame.",
+        "The overlay shows both teams’ selected icons and current scores and continues to update as the backend scoreboard changes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "operation": "create",
+          "description": "Create a reusable on-camera scoreboard overlay component rendered absolute-positioned within a relative video container; display both teams’ icons and scores using existing team icon metadata and scoreboard data; includes an anchor-to-bottom layout suitable for both viewer and broadcaster camera preview. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Remove BottomScorebar from the normal page flow; pass the current scoreboard into the viewer video container overlay area so the on-camera scoreboard renders over the video instead of fixed at the bottom; adjust page padding (remove extra bottom padding previously reserved for the fixed bar)."
+        },
+        {
+          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+          "operation": "modify",
+          "description": "Add support for rendering overlay children/content inside the video container (e.g., a prop for overlays or React children) so overlays can be absolute-positioned over the video frame without affecting layout."
+        }
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "summary": "Add the exact \"VillanSpoon\" label in the left corner of the on-camera scoreboard overlay for both broadcaster camera preview and viewer watch video.",
+      "acceptanceCriteria": [
+        "The on-camera scoreboard overlay includes the exact text \"VillanSpoon\".",
+        "The label is positioned in the left corner of the overlay (top-left or bottom-left within the overlay, but clearly in the left corner).",
+        "The label appears in both the broadcaster camera preview overlay and the viewer on-video overlay."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/scoreboard/OnCameraScoreboardOverlay.tsx",
+          "operation": "modify",
+          "description": "Add the exact \"VillanSpoon\" text label positioned in the left corner within the overlay, ensuring it is clearly visible over video in both contexts. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/BroadcasterPage.tsx",
+          "operation": "modify",
+          "description": "Render the on-camera scoreboard overlay inside the broadcaster camera preview video container so the \"VillanSpoon\" label (and scoreboard) appears over the preview while live."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the viewer’s on-camera scoreboard overlay is rendered via the shared overlay component so the \"VillanSpoon\" label appears over the viewer video as well."
+        }
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "summary": "Switch broadcaster score editing to manual numeric entry fields (no +/- controls) while continuing to persist updates through the existing scoreboard update flow.",
+      "acceptanceCriteria": [
+        "Broadcaster can manually enter Team A and Team B scores via numeric input fields (or equivalent manual entry UI) instead of increment/decrement controls.",
+        "Saving/updating scores uses the existing scoreboard update flow so viewers see the updated scores.",
+        "Invalid values are prevented or handled safely (e.g., non-numeric rejected; negative scores not allowed)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/broadcast/ScoreboardControls.tsx",
+          "operation": "modify",
+          "description": "Replace increment/decrement buttons with manual numeric inputs for Team A and Team B scores; enforce non-negative integer-only input (reject non-numeric, clamp negatives to 0); keep existing update mutation so the persisted backend scoreboard continues to drive viewer updates."
+        }
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "summary": "Remove the broadcaster \"Score\" / point button so no point event can be emitted via that UI path.",
+      "acceptanceCriteria": [
+        "The broadcaster UI no longer displays a \"Score\" (point) button in the game controls.",
+        "No point/score event is emitted from the removed button path."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "operation": "modify",
+          "description": "Remove the \"Score\" button and its handler/mutation call so the broadcaster cannot emit point/score events from this control panel."
+        }
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "summary": "Update broadcaster Flag control to collect team selection + reason, publish via existing flag mechanism, and render the resulting flag announcement as an on-camera overlay for both broadcaster preview and viewer watch.",
+      "acceptanceCriteria": [
+        "When the broadcaster triggers a flag, the UI collects (a) the team (Team A or Team B) and (b) a reason text before publishing.",
+        "The published flag announcement is visible as an overlay on top of the video area (not only in the side feed / below the video) for viewers.",
+        "The broadcaster camera preview also shows the same flag overlay on top of the video area.",
+        "The overlay text includes both the selected team and the entered reason in English user-facing text.",
+        "The flag announcement is persisted/published through the existing backend event mechanism so late-joining viewers can still see it in the event feed."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add React Query hooks to publish a flag with team+reason via the existing backend flag function and to fetch active flag overlays for rendering over video; ensure queries/mutations invalidate the relevant caches so overlays and feeds update promptly."
+        },
+        {
+          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
+          "operation": "modify",
+          "description": "Replace the current flag action with a UI flow that requires selecting Team A/Team B and entering a reason before publishing; submit via the new flag mutation hook; keep all user-facing strings in English; maintain disabled/loading behaviors."
+        },
+        {
+          "path": "frontend/src/components/events/FlagAnnouncementOverlay.tsx",
+          "operation": "create",
+          "description": "Create an on-camera flag announcement overlay component that renders within a video container (absolute-positioned) and displays English text including the selected team and entered reason; designed to be used in both broadcaster preview and viewer watch. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/BroadcasterPage.tsx",
+          "operation": "modify",
+          "description": "Fetch active flag overlays for the session and render the flag announcement overlay inside the broadcaster camera preview video container (over-video) so the broadcaster sees the same on-camera announcement."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Fetch active flag overlays for the session and render the flag announcement overlay inside the viewer video container (over-video) so viewers see the announcement on-camera rather than below/aside the video."
+        }
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "summary": "Render the viewer’s latest-event presentation as a temporary on-camera overlay within the video container instead of a card below the video.",
+      "acceptanceCriteria": [
+        "Latest event UI is rendered as an overlay within the viewer video container (absolute-positioned over video), not as a normal-flow element beneath it.",
+        "Overlay remains temporary/auto-dismissed similar to the current latest event behavior."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/events/LatestEventOverlay.tsx",
+          "operation": "modify",
+          "description": "Update the latest event overlay component styling/structure so it can be rendered as an absolute-positioned on-camera overlay within a relative video container while retaining the current auto-dismiss behavior."
+        },
+        {
+          "path": "frontend/src/pages/ViewerWatchPage.tsx",
+          "operation": "modify",
+          "description": "Move LatestEventOverlay rendering from below the video into the viewer video container overlay area (using ViewerVideoPlayer overlay support) so it appears on-camera over the video."
+        },
+        {
+          "path": "frontend/src/components/viewer/ViewerVideoPlayer.tsx",
+          "operation": "modify",
+          "description": "Ensure the video container remains the positioning context (relative) for overlays and that overlays can be stacked (latest event + scoreboard + flags) without breaking existing lifecycle-state presentation."
+        }
+      ]
+    }
+  ]
+}
