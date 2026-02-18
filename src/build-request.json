@@ -1,92 +1,54 @@
 {
   "kind": "build_request",
-  "title": "Fix broadcaster start (go live) refresh with no session created",
-  "projectName": "Gridiron Live",
-  "priority": "high",
+  "title": "Reposition quarter timer and control buttons",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-47",
-      "text": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "it wont let me go live it just refreshs pls fix it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After a successful startSession(broadcaster, sessionCode) call, isValidSessionCode(sessionCode) returns true.",
-        "Immediately after startSession, calling setTeamIcons(sessionCode, team1Icon, team2Icon) succeeds (does not trap with \"Session does not exist\").",
-        "getSessionMetadata(sessionCode) returns the broadcaster name and a non-null startTime after startSession."
-      ]
-    },
-    {
-      "id": "REQ-48",
-      "text": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "just fix the brodcasting"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After a session is started and team icons are set, addFlagEvent(sessionCode, team, reason) results in getEvents(sessionCode) including the new flag event.",
-        "After a session is started, addCaption(sessionCode, text) results in getLatestCaption(sessionCode) returning that caption.",
-        "No backend method relies on mutating immutable session fields in-place; instead, session updates are persisted by writing an updated Session back into the sessions store."
-      ]
-    },
-    {
-      "id": "REQ-49",
-      "text": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
+      "id": "REQ-1",
+      "text": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-20"
         ],
         "quotes": [
-          "1 nothing it just refreshes"
+          "put the quarter buttons in the same pllace as the point section"
         ]
       },
       "acceptanceCriteria": [
-        "On Chrome, clicking \"Start Broadcast\" does not cause a full page reload.",
-        "When startSession + setTeamIcons succeed, the broadcaster page switches from the start card to the LIVE camera preview UI and shows a session code card.",
-        "The Start Broadcast button shows a disabled/loading state while the start is in progress (status === 'starting'), preventing duplicate submissions."
+        "Quarter control buttons appear in the same layout area as the point tracking controls",
+        "Both control sections maintain visual consistency and alignment",
+        "All buttons remain fully functional after repositioning"
       ]
     },
     {
-      "id": "REQ-50",
-      "text": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
+      "id": "REQ-2",
+      "text": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-20"
         ],
         "quotes": [
-          "2 comepletely same"
+          "make the quarter timer at the top left of the camera"
         ]
       },
       "acceptanceCriteria": [
-        "If startSession or setTeamIcons fails, the broadcaster start card renders a visible error message in English (e.g., \"Could not start the broadcast. Please try again.\").",
-        "On failure, the UI remains on the start screen and the Start Broadcast button becomes clickable again after the attempt completes.",
-        "The error message does not require opening the browser console to understand what happened."
+        "Quarter timer appears overlaid on the video feed at the top-left position",
+        "Timer remains visible and readable throughout the broadcast",
+        "Timer position does not interfere with other video overlays"
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo (no additional backend services).",
-    "Only create backend/migration.mo if an upgrade requires preserving existing stable state; otherwise, do not add a migration.",
-    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT.",
-    "Use English for all user-facing text."
+    "Do not modify the quarter timer functionality (6:00 countdown, Start/Pause/Reset/Next Quarter behavior, Halftime mode)",
+    "Preserve existing WebRTC broadcasting implementation",
+    "Maintain all existing scoreboard and event features"
   ],
   "nonGoals": [
-    "Do not add new features beyond fixing the go-live/start broadcast refresh behavior and making the start failure visible to the user.",
-    "Do not change the overall football-themed UI styling beyond what is needed to display errors/loading states.",
-    "Do not add third-party services (streaming, databases, auth providers beyond Internet Identity)."
+    "Changing quarter timer duration or behavior",
+    "Modifying WebRTC streaming logic",
+    "Altering scoreboard or event tracking functionality"
   ],
   "imageRequirements": {
     "required": [],

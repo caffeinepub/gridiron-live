@@ -8,9 +8,9 @@ import Order "mo:core/Order";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
 import Bool "mo:core/Bool";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   type TeamIcon = {
     #dolphin;

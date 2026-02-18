@@ -2,10 +2,9 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-frontend-broadcaster-start-flow-so-clicking-start-broadcast-does-not-refresh-the-page-and-instead-reliably-transitions-into-the-live-broadcaster-ui-state-when-the-backend-calls-succeed",
-      "featureTitle": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
+      "featureId": "feature-move-the-quarter-control-buttons-start-pause-reset-next-quarter-from-their-current-location-to-the-same-position-as-the-point-section-controls-in-the-broadcaster-interface",
+      "featureTitle": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
       "files": [
-        "frontend/src/hooks/useBroadcasterSession.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -17,15 +16,14 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-49"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-clear-user-facing-error-feedback-on-the-broadcaster-start-card-when-starting-the-session-fails-e-g-backend-trap-or-network-error-using-english-messaging-and-without-leaving-the-user-on-an-unchanged-screen",
-      "featureTitle": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
+      "featureId": "feature-reposition-the-quarter-timer-display-to-appear-at-the-top-left-corner-of-the-camera-video-feed-on-the-video-overlay-itself",
+      "featureTitle": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
       "files": [
-        "frontend/src/hooks/useBroadcasterSession.ts",
         "frontend/src/pages/BroadcasterPage.tsx"
       ],
       "components": [
@@ -37,7 +35,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-50"
+        "REQ-2"
       ],
       "confidence": "high"
     }

@@ -10,9 +10,12 @@ import { useCamera } from '../camera/useCamera';
 import { useMicrophone } from '../hooks/useMicrophone';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { usePublishCaption } from '../hooks/useQueries';
+import { useQuarterTimer } from '../hooks/useQuarterTimer';
 import SessionCodeCard from '../components/broadcast/SessionCodeCard';
 import FootballControlPanel from '../components/broadcast/FootballControlPanel';
 import ScoreboardControls from '../components/broadcast/ScoreboardControls';
+import QuarterControls from '../components/broadcast/QuarterControls';
+import QuarterTimerOverlay from '../components/broadcast/QuarterTimerOverlay';
 import PermissionsHelp from '../components/broadcast/PermissionsHelp';
 import MicrophonePermissionsHelp from '../components/broadcast/MicrophonePermissionsHelp';
 import BroadcasterMicToggle from '../components/broadcast/BroadcasterMicToggle';
@@ -37,6 +40,18 @@ export default function BroadcasterPage() {
   const { data: events = [] } = useGetEvents(sessionCode || undefined);
   const { data: scoreboard, isLoading: scoreboardLoading } = useGetScoreboard(sessionCode || undefined);
   const flagEvents = useGetFlagEvents(sessionCode || undefined);
+
+  const {
+    phase,
+    timeRemaining,
+    isRunning,
+    formattedTime,
+    start: startTimer,
+    pause: pauseTimer,
+    reset: resetTimer,
+    nextQuarter,
+    toggleHalftime,
+  } = useQuarterTimer();
 
   const activeFlagOverlay = useTimedFlagOverlay({
     sessionCode: sessionCode || '',
@@ -444,7 +459,10 @@ export default function BroadcasterPage() {
                     />
                     <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-                    {/* Broadcaster transcript overlay - moved to top */}
+                    {/* Quarter timer overlay - top left */}
+                    <QuarterTimerOverlay phase={phase} formattedTime={formattedTime} />
+
+                    {/* Broadcaster transcript overlay - moved to top center */}
                     {captionsEnabled && transcript && (
                       <div className="absolute top-4 left-1/2 -translate-x-1/2 max-w-[90%] px-4 py-2 bg-black/80 backdrop-blur-sm rounded-lg z-20">
                         <p className="text-white text-center text-sm md:text-base leading-relaxed">
@@ -470,44 +488,48 @@ export default function BroadcasterPage() {
                         </div>
                       </div>
                     )}
-
-                    {cameraLoading && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <div className="text-center text-white">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2" />
-                          <p className="text-sm">Starting camera...</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <FootballControlPanel 
+              {scoreboard && (
+                <ScoreboardControls 
                   sessionCode={sessionCode} 
-                  scoreboard={scoreboard}
-                  isLoading={scoreboardLoading}
+                  currentScoreboard={scoreboard}
                 />
-                {scoreboard && (
-                  <ScoreboardControls sessionCode={sessionCode} currentScoreboard={scoreboard} />
-                )}
-              </div>
-
-              <div className="flex justify-center">
-                <Button
-                  variant="destructive"
-                  size="lg"
-                  onClick={handleEndBroadcast}
-                  disabled={status === 'ending'}
-                >
-                  End Broadcast
-                </Button>
-              </div>
+              )}
             </div>
 
-            <div className="lg:col-span-1">
+            <div className="space-y-4">
+              <FootballControlPanel 
+                sessionCode={sessionCode} 
+                scoreboard={scoreboard}
+                isLoading={scoreboardLoading}
+              />
+
+              <QuarterControls
+                phase={phase}
+                formattedTime={formattedTime}
+                isRunning={isRunning}
+                onStart={startTimer}
+                onPause={pauseTimer}
+                onReset={resetTimer}
+                onNextQuarter={nextQuarter}
+                onToggleHalftime={toggleHalftime}
+                disabled={!isLive}
+              />
+
               <EventFeed events={events} sessionCode={sessionCode} />
+
+              <Button
+                variant="destructive"
+                size="lg"
+                className="w-full"
+                onClick={handleEndBroadcast}
+                disabled={status === 'ending'}
+              >
+                {status === 'ending' ? 'Ending...' : 'End Broadcast'}
+              </Button>
             </div>
           </div>
         </div>

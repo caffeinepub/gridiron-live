@@ -1,65 +1,49 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T23:15:38.640Z",
+  "generatedAt": "2026-02-18T15:19:17.624Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-47",
-        "summary": "Fix backend session persistence so that calling startSession actually stores the new session and subsequent calls (e.g., setTeamIcons) can find it, rather than trapping due to a missing session.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-48",
-        "summary": "Fix backend event/caption mutation logic so that adding events/flag events/captions updates the stored session data correctly (no in-place mutation of immutable session fields), ensuring the session remains consistent after go-live.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-49",
-        "summary": "Update the frontend broadcaster start flow so clicking \"Start Broadcast\" does not refresh the page and instead reliably transitions into the live broadcaster UI state when the backend calls succeed.",
+        "id": "REQ-1",
+        "summary": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcasterSession.ts"
+          "frontend/src/components/broadcast/FootballControlPanel.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcasterSession.ts"
+          "frontend/src/pages/BroadcasterPage.tsx"
         ]
       },
       {
-        "id": "REQ-50",
-        "summary": "Add clear, user-facing error feedback on the broadcaster start card when starting the session fails (e.g., backend trap or network error), using English messaging and without leaving the user on an unchanged screen.",
+        "id": "REQ-2",
+        "summary": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcasterSession.ts"
+          "frontend/src/pages/BroadcasterPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/hooks/useBroadcasterSession.ts"
+          "frontend/src/pages/BroadcasterPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/hooks/useBroadcasterSession.ts",
+    "frontend/src/components/broadcast/QuarterControls.tsx",
+    "frontend/src/components/broadcast/QuarterTimerOverlay.tsx",
+    "frontend/src/hooks/useQuarterTimer.ts",
     "frontend/src/pages/BroadcasterPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

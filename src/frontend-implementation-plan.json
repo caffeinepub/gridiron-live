@@ -1,47 +1,42 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix broadcaster start flow to avoid page refresh and show errors",
+  "title": "Reposition quarter timer and control buttons",
   "requirements": [
     {
-      "id": "REQ-49",
-      "summary": "Prevent full page reload on Start Broadcast and reliably transition into LIVE broadcaster UI after successful start.",
+      "id": "REQ-1",
+      "summary": "Move quarter control buttons to the same position as point section controls in broadcaster interface",
       "acceptanceCriteria": [
-        "On Chrome, clicking \"Start Broadcast\" does not cause a full page reload.",
-        "When startSession + setTeamIcons succeed, the broadcaster page switches from the start card to the LIVE camera preview UI and shows a session code card.",
-        "The Start Broadcast button shows a disabled/loading state while the start is in progress (status === 'starting'), preventing duplicate submissions."
+        "Quarter control buttons appear in the same layout area as the point tracking controls",
+        "Both control sections maintain visual consistency and alignment",
+        "All buttons remain fully functional after repositioning"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Update the start card to use a submit-safe handler (e.g., form onSubmit + preventDefault, and/or explicitly set the Start Broadcast button type) so Start Broadcast never triggers a browser navigation/reload; wire the UI to the existing useBroadcasterSession status ('starting'/'live') so success transitions into the existing LIVE preview + SessionCodeCard state. Use the selected camera component hook (camera/useCamera) to ensure the live state always shows a stable, non-collapsing camera preview area while the camera initializes. Verify the component's usage instructions before implementing."
+          "description": "Relocate the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current position to align with the point section controls. Ensure the buttons maintain their existing functionality and event handlers while being repositioned within the layout to match the visual alignment of the point tracking controls."
         },
         {
-          "path": "frontend/src/hooks/useBroadcasterSession.ts",
+          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
           "operation": "modify",
-          "description": "Harden session start state handling to prevent duplicate in-flight starts (keep status as 'starting' until completion) and ensure the hook reliably resolves to 'live' only after startSession + setTeamIcons succeed, enabling the page to render the LIVE broadcaster UI without needing a refresh."
+          "description": "Update the control panel layout to incorporate the quarter control buttons alongside the point section controls. Adjust the component structure to ensure both control sections share consistent spacing, visual styling, and alignment while maintaining all existing flag event dialog functionality."
         }
       ]
     },
     {
-      "id": "REQ-50",
-      "summary": "Show clear English error feedback on the broadcaster start card when starting the broadcast fails and allow retry.",
+      "id": "REQ-2",
+      "summary": "Reposition quarter timer display to top-left corner of camera video feed overlay",
       "acceptanceCriteria": [
-        "If startSession or setTeamIcons fails, the broadcaster start card renders a visible error message in English (e.g., \"Could not start the broadcast. Please try again.\").",
-        "On failure, the UI remains on the start screen and the Start Broadcast button becomes clickable again after the attempt completes.",
-        "The error message does not require opening the browser console to understand what happened."
+        "Quarter timer appears overlaid on the video feed at the top-left position",
+        "Timer remains visible and readable throughout the broadcast",
+        "Timer position does not interfere with other video overlays"
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/BroadcasterPage.tsx",
           "operation": "modify",
-          "description": "Add local error state for the start flow; when the start attempt throws (backend trap/network), render a prominent English error message inside the start card (near the Start Broadcast button and/or top of the card), and reset/clear the error on new attempts or input changes. Ensure the Start Broadcast button returns to enabled when status goes back to 'idle' after a failure."
-        },
-        {
-          "path": "frontend/src/hooks/useBroadcasterSession.ts",
-          "operation": "modify",
-          "description": "Optionally expose a start failure reason (or standardized error) from the hook so BroadcasterPage can display a consistent user-facing message while keeping detailed logging out of the UI."
+          "description": "Move the quarter timer display from its current location to appear as an overlay on the video feed at the top-left corner. Use absolute positioning within the video container to place the timer overlay, ensuring it remains visible and does not conflict with existing video overlays like the scoreboard or flag announcements."
         }
       ]
     }
