@@ -1,42 +1,22 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Reposition quarter timer and control buttons",
+  "title": "Reduce celebration text size and move below image",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Move quarter control buttons to the same position as point section controls in broadcaster interface",
+      "summary": "Reduce celebration score text font size and reposition it below the celebration image",
       "acceptanceCriteria": [
-        "Quarter control buttons appear in the same layout area as the point tracking controls",
-        "Both control sections maintain visual consistency and alignment",
-        "All buttons remain fully functional after repositioning"
+        "Celebration text appears directly below the team celebration image",
+        "Text size is visibly smaller than current implementation",
+        "Layout maintains proper spacing between image and text",
+        "Changes apply to both left and right team celebrations"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/BroadcasterPage.tsx",
+          "path": "frontend/src/components/broadcast/CelebrationOverlay.tsx",
           "operation": "modify",
-          "description": "Relocate the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current position to align with the point section controls. Ensure the buttons maintain their existing functionality and event handlers while being repositioned within the layout to match the visual alignment of the point tracking controls."
-        },
-        {
-          "path": "frontend/src/components/broadcast/FootballControlPanel.tsx",
-          "operation": "modify",
-          "description": "Update the control panel layout to incorporate the quarter control buttons alongside the point section controls. Adjust the component structure to ensure both control sections share consistent spacing, visual styling, and alignment while maintaining all existing flag event dialog functionality."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Reposition quarter timer display to top-left corner of camera video feed overlay",
-      "acceptanceCriteria": [
-        "Quarter timer appears overlaid on the video feed at the top-left position",
-        "Timer remains visible and readable throughout the broadcast",
-        "Timer position does not interfere with other video overlays"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BroadcasterPage.tsx",
-          "operation": "modify",
-          "description": "Move the quarter timer display from its current location to appear as an overlay on the video feed at the top-left corner. Use absolute positioning within the video container to place the timer overlay, ensuring it remains visible and does not conflict with existing video overlays like the scoreboard or flag announcements."
+          "description": "Modify the CelebrationOverlay component layout to position the celebration score text below the celebration image instead of centered on the screen. Reduce the font size of the text to make it visibly smaller. Update the flex layout structure to stack the image and text vertically while maintaining proper spacing. Ensure changes apply to both left-aligned and right-aligned team celebrations."
         }
       ]
     }

@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-move-the-quarter-control-buttons-start-pause-reset-next-quarter-from-their-current-location-to-the-same-position-as-the-point-section-controls-in-the-broadcaster-interface",
-      "featureTitle": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
+      "featureId": "feature-in-the-celebrationoverlay-component-reduce-the-font-size-of-the-celebration-score-text-and-reposition-it-to-display-below-the-celebration-image-instead-of-centered-on-the-screen",
+      "featureTitle": "In the CelebrationOverlay component, reduce the font size of the celebration score text and reposition it to display below the celebration image instead of centered on the screen",
       "files": [
-        "frontend/src/pages/BroadcasterPage.tsx"
+        "frontend/src/components/broadcast/CelebrationOverlay.tsx"
       ],
       "components": [
         "camera@1.0.0",
@@ -17,25 +17,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-reposition-the-quarter-timer-display-to-appear-at-the-top-left-corner-of-the-camera-video-feed-on-the-video-overlay-itself",
-      "featureTitle": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
-      "files": [
-        "frontend/src/pages/BroadcasterPage.tsx"
-      ],
-      "components": [
-        "camera@1.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
       ],
       "confidence": "high"
     }

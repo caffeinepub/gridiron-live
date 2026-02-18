@@ -1,35 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Live streaming app with WebRTC broadcasting, real-time scoreboard, quarter timer, and point tracking for family events",
-  "architectural_notes": [
-    "WebRTC broadcasting pipeline for real-time video/audio streaming",
-    "Quarter timer system: 6-minute countdown per quarter with Start/Pause/Reset/Next Quarter controls and Halftime toggle",
-    "Timer display positioned at top-left of camera view",
-    "Quarter control buttons positioned alongside point section controls"
-  ],
+  "summary": "New project",
+  "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-move-the-quarter-control-buttons-start-pause-reset-next-quarter-from-their-current-location-to-the-same-position-as-the-point-section-controls-in-the-broadcaster-interface",
-      "title": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
+      "id": "feature-in-the-celebrationoverlay-component-reduce-the-font-size-of-the-celebration-score-text-and-reposition-it-to-display-below-the-celebration-image-instead-of-centered-on-the-screen",
+      "title": "In the CelebrationOverlay component, reduce the font size of the celebration score text and reposition it to display below the celebration image instead of centered on the screen",
       "reqIds": [
         "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-reposition-the-quarter-timer-display-to-appear-at-the-top-left-corner-of-the-camera-video-feed-on-the-video-overlay-itself",
-      "title": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
-      "reqIds": [
-        "REQ-2"
       ],
       "version": 1
     }
   ],
   "new_feature_requests": [],
-  "projectName": "Reposition quarter timer and control buttons",
+  "projectName": "Reduce celebration text size and move below image",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

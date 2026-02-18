@@ -4,9 +4,13 @@ import type { Scoreboard } from '../../backend';
 
 interface OnCameraScoreboardOverlayProps {
   scoreboard: Scoreboard;
+  showThrowOff?: boolean;
 }
 
-export default function OnCameraScoreboardOverlay({ scoreboard }: OnCameraScoreboardOverlayProps) {
+export default function OnCameraScoreboardOverlay({ 
+  scoreboard, 
+  showThrowOff = false 
+}: OnCameraScoreboardOverlayProps) {
   const team1Icon = getTeamIconInfo(scoreboard.team1Icon);
   const team2Icon = getTeamIconInfo(scoreboard.team2Icon);
   const team1Name = getTeamScoreboardName(scoreboard.team1Icon);
@@ -41,8 +45,15 @@ export default function OnCameraScoreboardOverlay({ scoreboard }: OnCameraScoreb
             </div>
           </div>
 
-          {/* Centered Arrow */}
-          <div className="flex-shrink-0 flex items-center justify-center mt-2">
+          {/* Centered Arrow with ThrowOff Label */}
+          <div className="flex-shrink-0 flex flex-col items-center justify-center mt-2 relative">
+            {showThrowOff && (team1OnOffense || team2OnOffense) && (
+              <div className="absolute -top-5 bg-black/90 px-2 py-0.5 rounded border border-primary/50">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">
+                  ThrowOff
+                </span>
+              </div>
+            )}
             {team1OnOffense && (
               <ArrowLeft className="w-4 h-4 text-primary animate-pulse" />
             )}

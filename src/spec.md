@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Reposition quarter timer and control buttons in the broadcaster interface for better layout organization.
+**Goal:** Improve the celebration overlay layout by making the score text smaller and positioning it below the celebration image.
 
 **Planned changes:**
-- Move quarter control buttons (Start, Pause, Reset, Next Quarter) to the same position as the point section controls
-- Reposition the quarter timer display to overlay at the top-left corner of the camera video feed
+- Reduce font size of celebration score text in CelebrationOverlay component
+- Reposition celebration text to appear below the team celebration image
+- Ensure proper spacing between image and text
+- Apply changes to both left and right team celebrations
 
-**User-visible outcome:** The quarter timer appears at the top-left of the video feed, and the quarter control buttons are grouped with the point tracking controls for easier access during broadcasts.
+**User-visible outcome:** When a team scores, the celebration overlay will display with smaller text positioned neatly below the team image instead of centered on screen.

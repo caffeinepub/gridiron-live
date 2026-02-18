@@ -1,79 +1,35 @@
-import { useState, useCallback } from 'react';
-import { useStartSession, useEndSession, useSetTeamIcons } from './useQueries';
+import { useState } from 'react';
 import { TeamIcon } from '../backend';
 
-export type BroadcastStatus = 'idle' | 'starting' | 'live' | 'ending' | 'ended';
+export interface UseBroadcasterSessionReturn {
+  status: 'idle' | 'starting' | 'live' | 'ending';
+  sessionCode: string | null;
+  startSession: (broadcasterName: string, team1Icon: TeamIcon, team2Icon: TeamIcon) => Promise<void>;
+  endSession: () => Promise<void>;
+  isLive: boolean;
+  isIdle: boolean;
+}
 
-export function useBroadcasterSession() {
-  const [status, setStatus] = useState<BroadcastStatus>('idle');
-  const [sessionCode, setSessionCode] = useState<string | null>(null);
-  const startSessionMutation = useStartSession();
-  const endSessionMutation = useEndSession();
-  const setTeamIconsMutation = useSetTeamIcons();
+export function useBroadcasterSession(): UseBroadcasterSessionReturn {
+  const [status, setStatus] = useState<'idle' | 'starting' | 'live' | 'ending'>('idle');
+  const [sessionCode] = useState<string | null>(null);
 
-  const generateSessionCode = useCallback(() => {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let code = '';
-    for (let i = 0; i < 6; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  }, []);
+  const startSession = async (
+    broadcasterName: string,
+    team1Icon: TeamIcon,
+    team2Icon: TeamIcon
+  ): Promise<void> => {
+    setStatus('starting');
+    // Simulate session start for local recording
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setStatus('live');
+  };
 
-  const startSession = useCallback(
-    async (broadcasterName: string, team1Icon: TeamIcon, team2Icon: TeamIcon) => {
-      // Prevent duplicate starts
-      if (status === 'starting') {
-        return;
-      }
-
-      setStatus('starting');
-      const code = generateSessionCode();
-      
-      try {
-        await startSessionMutation.mutateAsync({
-          broadcaster: broadcasterName,
-          sessionCode: code,
-        });
-        
-        await setTeamIconsMutation.mutateAsync({
-          sessionCode: code,
-          team1Icon,
-          team2Icon,
-        });
-        
-        setSessionCode(code);
-        setStatus('live');
-        return code;
-      } catch (error) {
-        console.error('Failed to start session:', error);
-        // Reset to idle on failure so user can retry
-        setStatus('idle');
-        setSessionCode(null);
-        throw error;
-      }
-    },
-    [status, startSessionMutation, setTeamIconsMutation, generateSessionCode]
-  );
-
-  const endSession = useCallback(async () => {
-    if (!sessionCode) return;
-    
-    // Prevent duplicate end calls
-    if (status === 'ending' || status === 'ended') {
-      return;
-    }
-
+  const endSession = async (): Promise<void> => {
     setStatus('ending');
-    try {
-      await endSessionMutation.mutateAsync(sessionCode);
-      setStatus('ended');
-    } catch (error) {
-      console.error('Failed to end session:', error);
-      setStatus('live');
-      throw error;
-    }
-  }, [sessionCode, status, endSessionMutation]);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setStatus('idle');
+  };
 
   return {
     status,

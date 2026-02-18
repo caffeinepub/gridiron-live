@@ -1,162 +1,101 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { useAddFlagEvent } from '../../hooks/useQueries';
-import { Loader2 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Flag } from 'lucide-react';
 import { getTeamScoreboardName } from '../../lib/teamIcons';
 import type { Scoreboard } from '../../backend';
 
 interface FootballControlPanelProps {
-  sessionCode: string;
-  scoreboard?: Scoreboard;
-  isLoading?: boolean;
+  scoreboard: Scoreboard;
+  onAddFlagEvent: (team: string, reason: string) => void;
 }
 
-export default function FootballControlPanel({ sessionCode, scoreboard, isLoading }: FootballControlPanelProps) {
+export default function FootballControlPanel({
+  scoreboard,
+  onAddFlagEvent,
+}: FootballControlPanelProps) {
   const [flagDialogOpen, setFlagDialogOpen] = useState(false);
-  const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | ''>('');
+  const [selectedTeam, setSelectedTeam] = useState<'team1' | 'team2' | null>(null);
   const [flagReason, setFlagReason] = useState('');
 
-  const addFlagMutation = useAddFlagEvent();
+  const team1Name = getTeamScoreboardName(scoreboard.team1Icon);
+  const team2Name = getTeamScoreboardName(scoreboard.team2Icon);
 
-  const team1Name = scoreboard ? getTeamScoreboardName(scoreboard.team1Icon) : 'Team A';
-  const team2Name = scoreboard ? getTeamScoreboardName(scoreboard.team2Icon) : 'Team B';
-
-  const handleFlagClick = () => {
-    setFlagDialogOpen(true);
-    setSelectedTeam('');
-    setFlagReason('');
-  };
-
-  const handleFlagSubmit = async () => {
-    if (!selectedTeam || !flagReason.trim() || !scoreboard) return;
+  const handleFlagSubmit = () => {
+    if (!selectedTeam || !flagReason.trim()) return;
 
     const teamName = selectedTeam === 'team1' ? team1Name : team2Name;
-
-    await addFlagMutation.mutateAsync({
-      sessionCode,
-      team: teamName,
-      reason: flagReason.trim(),
-    });
+    onAddFlagEvent(teamName, flagReason.trim());
 
     setFlagDialogOpen(false);
-    setSelectedTeam('');
+    setSelectedTeam(null);
     setFlagReason('');
   };
 
-  const isProcessing = addFlagMutation.isPending;
-  const canSubmit = selectedTeam && flagReason.trim() && !isProcessing && scoreboard;
-  const isDisabled = isLoading || !scoreboard || isProcessing;
-
   return (
-    <>
-      <Card className="border-2">
-        <CardHeader>
-          <CardTitle className="scoreboard-text">Game Controls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Button
-            size="lg"
-            variant="destructive"
-            className="w-full h-32 flex flex-col gap-3 text-lg"
-            onClick={handleFlagClick}
-            disabled={isDisabled}
-            title={isLoading ? 'Loading scoreboard...' : !scoreboard ? 'Initializing...' : undefined}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-16 w-16 animate-spin" />
-                <span className="scoreboard-text text-sm">Loading...</span>
-              </>
-            ) : (
-              <>
-                <img
-                  src="/assets/generated/icon-flag.dim_256x256.png"
-                  alt="Flag"
-                  className="h-16 w-16 object-contain"
-                />
-                <span className="scoreboard-text">Flag</span>
-              </>
-            )}
-          </Button>
-          {isLoading && (
-            <p className="text-sm text-muted-foreground mt-2 text-center">
-              Initializing game controls...
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Dialog open={flagDialogOpen} onOpenChange={setFlagDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="scoreboard-text">Flag Event</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label>Select Team</Label>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedTeam === 'team1' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => setSelectedTeam('team1')}
-                  disabled={isProcessing}
-                >
-                  {team1Name}
-                </Button>
-                <Button
-                  variant={selectedTeam === 'team2' ? 'default' : 'outline'}
-                  className="flex-1"
-                  onClick={() => setSelectedTeam('team2')}
-                  disabled={isProcessing}
-                >
-                  {team2Name}
-                </Button>
+    <Card className="border-2">
+      <CardHeader>
+        <CardTitle className="scoreboard-text">Game Controls</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Dialog open={flagDialogOpen} onOpenChange={setFlagDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="lg" variant="outline" className="w-full">
+              <Flag className="mr-2 h-5 w-5" />
+              Flag
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Report Flag</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-4">
+              <div className="space-y-2">
+                <Label>Which team?</Label>
+                <div className="flex gap-3">
+                  <Button
+                    variant={selectedTeam === 'team1' ? 'default' : 'outline'}
+                    onClick={() => setSelectedTeam('team1')}
+                    className="flex-1"
+                  >
+                    {team1Name}
+                  </Button>
+                  <Button
+                    variant={selectedTeam === 'team2' ? 'default' : 'outline'}
+                    onClick={() => setSelectedTeam('team2')}
+                    className="flex-1"
+                  >
+                    {team2Name}
+                  </Button>
+                </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="flag-reason">Reason</Label>
+                <Textarea
+                  id="flag-reason"
+                  placeholder="Enter flag reason..."
+                  value={flagReason}
+                  onChange={(e) => setFlagReason(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={handleFlagSubmit}
+                disabled={!selectedTeam || !flagReason.trim()}
+              >
+                Submit Flag
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="flag-reason">Reason</Label>
-              <Input
-                id="flag-reason"
-                placeholder="Enter flag reason"
-                value={flagReason}
-                onChange={(e) => setFlagReason(e.target.value)}
-                disabled={isProcessing}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && canSubmit) {
-                    handleFlagSubmit();
-                  }
-                }}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setFlagDialogOpen(false)}
-              disabled={isProcessing}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleFlagSubmit}
-              disabled={!canSubmit}
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                'Submit Flag'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 }

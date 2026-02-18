@@ -1,36 +1,24 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-18T15:19:17.624Z",
+  "generatedAt": "2026-02-18T19:55:33.107Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
+        "summary": "In the CelebrationOverlay component, reduce the font size of the celebration score text and reposition it to display below the celebration image instead of centered on the screen",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx",
-          "frontend/src/components/broadcast/FootballControlPanel.tsx"
+          "frontend/src/components/broadcast/CelebrationOverlay.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/BroadcasterPage.tsx"
+          "frontend/src/components/broadcast/CelebrationOverlay.tsx"
         ]
       }
     ]
@@ -41,10 +29,7 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/broadcast/QuarterControls.tsx",
-    "frontend/src/components/broadcast/QuarterTimerOverlay.tsx",
-    "frontend/src/hooks/useQuarterTimer.ts",
-    "frontend/src/pages/BroadcasterPage.tsx",
+    "frontend/src/components/broadcast/CelebrationOverlay.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

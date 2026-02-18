@@ -3,37 +3,41 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, Minus } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 import { getTeamIconInfo, getTeamScoreboardName } from '../../lib/teamIcons';
-import { useUpdateScoreboard } from '../../hooks/useQueries';
+import { useCelebrationOverlay } from '../../hooks/useCelebrationOverlay';
 import type { Scoreboard, TeamRole } from '../../backend';
 
 interface ScoreboardControlsProps {
-  sessionCode: string;
   currentScoreboard: Scoreboard;
+  onUpdate: (scoreboard: Scoreboard) => void;
+  showThrowOff: boolean;
+  onThrowOffToggle: (enabled: boolean) => void;
   disabled?: boolean;
+  onCelebrationTrigger?: (teamIcon: string) => void;
 }
 
 export default function ScoreboardControls({
-  sessionCode,
   currentScoreboard,
+  onUpdate,
+  showThrowOff,
+  onThrowOffToggle,
   disabled,
+  onCelebrationTrigger,
 }: ScoreboardControlsProps) {
   const [team1Score, setTeam1Score] = useState(Number(currentScoreboard.team1Score));
   const [team2Score, setTeam2Score] = useState(Number(currentScoreboard.team2Score));
   const [team1Role, setTeam1Role] = useState<TeamRole>(currentScoreboard.team1Role);
   const [team2Role, setTeam2Role] = useState<TeamRole>(currentScoreboard.team2Role);
 
-  const updateMutation = useUpdateScoreboard();
-
   const team1Icon = getTeamIconInfo(currentScoreboard.team1Icon);
   const team2Icon = getTeamIconInfo(currentScoreboard.team2Icon);
   const team1Name = getTeamScoreboardName(currentScoreboard.team1Icon);
   const team2Name = getTeamScoreboardName(currentScoreboard.team2Icon);
 
-  const handleUpdate = async () => {
-    await updateMutation.mutateAsync({
-      sessionCode,
+  const handleUpdate = () => {
+    onUpdate({
+      ...currentScoreboard,
       team1Score: BigInt(team1Score),
       team2Score: BigInt(team2Score),
       team1Role,
@@ -60,38 +64,90 @@ export default function ScoreboardControls({
   };
 
   const incrementTeam1Score = () => {
-    setTeam1Score((prev) => prev + 1);
+    const newScore = team1Score + 1;
+    setTeam1Score(newScore);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(newScore),
+      team2Score: BigInt(team2Score),
+      team1Role,
+      team2Role,
+    });
+    
+    // Trigger celebration for team 1
+    if (onCelebrationTrigger) {
+      onCelebrationTrigger(currentScoreboard.team1Icon);
+    }
   };
 
   const decrementTeam1Score = () => {
-    setTeam1Score((prev) => Math.max(0, prev - 1));
+    const newScore = Math.max(0, team1Score - 1);
+    setTeam1Score(newScore);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(newScore),
+      team2Score: BigInt(team2Score),
+      team1Role,
+      team2Role,
+    });
   };
 
   const incrementTeam2Score = () => {
-    setTeam2Score((prev) => prev + 1);
+    const newScore = team2Score + 1;
+    setTeam2Score(newScore);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(team1Score),
+      team2Score: BigInt(newScore),
+      team1Role,
+      team2Role,
+    });
+    
+    // Trigger celebration for team 2
+    if (onCelebrationTrigger) {
+      onCelebrationTrigger(currentScoreboard.team2Icon);
+    }
   };
 
   const decrementTeam2Score = () => {
-    setTeam2Score((prev) => Math.max(0, prev - 1));
+    const newScore = Math.max(0, team2Score - 1);
+    setTeam2Score(newScore);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(team1Score),
+      team2Score: BigInt(newScore),
+      team1Role,
+      team2Role,
+    });
   };
 
   const setTeamAOnOffense = () => {
-    setTeam1Role('offense' as TeamRole);
-    setTeam2Role('defense' as TeamRole);
+    const newTeam1Role = 'offense' as TeamRole;
+    const newTeam2Role = 'defense' as TeamRole;
+    setTeam1Role(newTeam1Role);
+    setTeam2Role(newTeam2Role);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(team1Score),
+      team2Score: BigInt(team2Score),
+      team1Role: newTeam1Role,
+      team2Role: newTeam2Role,
+    });
   };
 
   const setTeamBOnOffense = () => {
-    setTeam1Role('defense' as TeamRole);
-    setTeam2Role('offense' as TeamRole);
+    const newTeam1Role = 'defense' as TeamRole;
+    const newTeam2Role = 'offense' as TeamRole;
+    setTeam1Role(newTeam1Role);
+    setTeam2Role(newTeam2Role);
+    onUpdate({
+      ...currentScoreboard,
+      team1Score: BigInt(team1Score),
+      team2Score: BigInt(team2Score),
+      team1Role: newTeam1Role,
+      team2Role: newTeam2Role,
+    });
   };
-
-  const hasChanges =
-    team1Score !== Number(currentScoreboard.team1Score) ||
-    team2Score !== Number(currentScoreboard.team2Score) ||
-    team1Role !== currentScoreboard.team1Role ||
-    team2Role !== currentScoreboard.team2Role;
-
-  const isProcessing = updateMutation.isPending;
 
   return (
     <Card className="border-2">
@@ -116,7 +172,7 @@ export default function ScoreboardControls({
               size="icon"
               variant="outline"
               onClick={decrementTeam1Score}
-              disabled={disabled || isProcessing || team1Score === 0}
+              disabled={disabled || team1Score === 0}
               className="h-10 w-10"
             >
               <Minus className="h-4 w-4" />
@@ -127,7 +183,8 @@ export default function ScoreboardControls({
                 min="0"
                 value={team1Score}
                 onChange={(e) => handleTeam1ScoreChange(e.target.value)}
-                disabled={disabled || isProcessing}
+                onBlur={handleUpdate}
+                disabled={disabled}
                 className="text-center text-2xl font-bold scoreboard-text"
               />
             </div>
@@ -135,7 +192,7 @@ export default function ScoreboardControls({
               size="icon"
               variant="outline"
               onClick={incrementTeam1Score}
-              disabled={disabled || isProcessing}
+              disabled={disabled}
               className="h-10 w-10"
             >
               <Plus className="h-4 w-4" />
@@ -160,7 +217,7 @@ export default function ScoreboardControls({
               size="icon"
               variant="outline"
               onClick={decrementTeam2Score}
-              disabled={disabled || isProcessing || team2Score === 0}
+              disabled={disabled || team2Score === 0}
               className="h-10 w-10"
             >
               <Minus className="h-4 w-4" />
@@ -171,7 +228,8 @@ export default function ScoreboardControls({
                 min="0"
                 value={team2Score}
                 onChange={(e) => handleTeam2ScoreChange(e.target.value)}
-                disabled={disabled || isProcessing}
+                onBlur={handleUpdate}
+                disabled={disabled}
                 className="text-center text-2xl font-bold scoreboard-text"
               />
             </div>
@@ -179,7 +237,7 @@ export default function ScoreboardControls({
               size="icon"
               variant="outline"
               onClick={incrementTeam2Score}
-              disabled={disabled || isProcessing}
+              disabled={disabled}
               className="h-10 w-10"
             >
               <Plus className="h-4 w-4" />
@@ -194,7 +252,7 @@ export default function ScoreboardControls({
             <Button
               variant={team1Role === 'offense' ? 'default' : 'outline'}
               onClick={setTeamAOnOffense}
-              disabled={disabled || isProcessing}
+              disabled={disabled}
               className="flex-1"
             >
               {team1Name}
@@ -202,7 +260,7 @@ export default function ScoreboardControls({
             <Button
               variant={team2Role === 'offense' ? 'default' : 'outline'}
               onClick={setTeamBOnOffense}
-              disabled={disabled || isProcessing}
+              disabled={disabled}
               className="flex-1"
             >
               {team2Name}
@@ -210,22 +268,33 @@ export default function ScoreboardControls({
           </div>
         </div>
 
-        {/* Update Button */}
-        <Button
-          size="lg"
-          className="w-full"
-          onClick={handleUpdate}
-          disabled={disabled || isProcessing || !hasChanges}
-        >
-          {isProcessing ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Updating...
-            </>
-          ) : (
-            'Update Scoreboard'
+        {/* ThrowOff Toggle */}
+        <div className="space-y-3 pt-3 border-t border-border">
+          <Label className="text-sm font-semibold text-primary">ThrowOff Indicator</Label>
+          <div className="flex gap-3">
+            <Button
+              variant={showThrowOff ? 'default' : 'outline'}
+              onClick={() => onThrowOffToggle(true)}
+              disabled={disabled}
+              className="flex-1"
+            >
+              Show
+            </Button>
+            <Button
+              variant={!showThrowOff ? 'default' : 'outline'}
+              onClick={() => onThrowOffToggle(false)}
+              disabled={disabled}
+              className="flex-1"
+            >
+              Hide
+            </Button>
+          </div>
+          {showThrowOff && (
+            <p className="text-xs text-muted-foreground">
+              "ThrowOff" label is visible on camera overlay
+            </p>
           )}
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

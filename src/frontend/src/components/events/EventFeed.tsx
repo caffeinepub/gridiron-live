@@ -5,7 +5,7 @@ import { Flag, Trophy } from 'lucide-react';
 
 interface EventFeedProps {
   events: Event[];
-  sessionCode: string;
+  sessionCode?: string;
 }
 
 export default function EventFeed({ events }: EventFeedProps) {

@@ -1,54 +1,33 @@
 {
   "kind": "build_request",
-  "title": "Reposition quarter timer and control buttons",
+  "title": "Reduce celebration text size and move below image",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Move the quarter control buttons (Start, Pause, Reset, Next Quarter) from their current location to the same position as the point section controls in the broadcaster interface",
+      "text": "In the CelebrationOverlay component, reduce the font size of the celebration score text and reposition it to display below the celebration image instead of centered on the screen",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-20"
+          "msg-latest"
         ],
         "quotes": [
-          "put the quarter buttons in the same pllace as the point section"
+          "make the celebration text smaller and put it below the pic"
         ]
       },
       "acceptanceCriteria": [
-        "Quarter control buttons appear in the same layout area as the point tracking controls",
-        "Both control sections maintain visual consistency and alignment",
-        "All buttons remain fully functional after repositioning"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Reposition the quarter timer display to appear at the top-left corner of the camera video feed (on the video overlay itself)",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-20"
-        ],
-        "quotes": [
-          "make the quarter timer at the top left of the camera"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Quarter timer appears overlaid on the video feed at the top-left position",
-        "Timer remains visible and readable throughout the broadcast",
-        "Timer position does not interfere with other video overlays"
+        "Celebration text appears directly below the team celebration image",
+        "Text size is visibly smaller than current implementation",
+        "Layout maintains proper spacing between image and text",
+        "Changes apply to both left and right team celebrations"
       ]
     }
   ],
-  "constraints": [
-    "Do not modify the quarter timer functionality (6:00 countdown, Start/Pause/Reset/Next Quarter behavior, Halftime mode)",
-    "Preserve existing WebRTC broadcasting implementation",
-    "Maintain all existing scoreboard and event features"
-  ],
+  "constraints": [],
   "nonGoals": [
-    "Changing quarter timer duration or behavior",
-    "Modifying WebRTC streaming logic",
-    "Altering scoreboard or event tracking functionality"
+    "Changing celebration overlay duration",
+    "Modifying celebration image sizing",
+    "Adding new celebration animations"
   ],
   "imageRequirements": {
     "required": [],
